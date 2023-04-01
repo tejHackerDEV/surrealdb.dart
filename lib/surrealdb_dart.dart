@@ -1,3 +1,4 @@
 library surrealdb_dart;
 
-export 'src/surrealdb_dart_base.dart';
+export 'src/classes/pinger.dart';
+export 'src/surreal.dart';
