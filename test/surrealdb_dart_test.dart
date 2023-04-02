@@ -95,4 +95,19 @@ void main() {
       await db.invalidate();
     });
   });
+
+  group('DB let method test', () {
+    test('Should assign value as a parameter', () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.let(key: 'name', value: {
+        'first': 'tejHacker',
+        'last': 'Dev',
+      });
+    });
+  });
 }

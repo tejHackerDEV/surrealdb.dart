@@ -250,6 +250,31 @@ class Surreal extends Emitter {
     _token = token;
   }
 
+  /// Assigns a [value] as a parameter with [key] as identifier
+  /// for this connection.
+  Future<void> let({
+    required String key,
+    required dynamic value,
+  }) async {
+    final id = _uuid.v4();
+    _send(
+      id: id,
+      method: RPCMethodNames.kLet,
+      params: [
+        key,
+        value,
+      ],
+    );
+
+    final response = await futureOnce(id);
+    if (response.error != null) {
+      throw SurrealError(
+        code: response.error!.code,
+        message: response.error!.message,
+      );
+    }
+  }
+
   /// Sends the data to the websocket by encoding to string
   Future<void> _send({
     required String id,
