@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:uuid/uuid.dart';
@@ -62,17 +63,41 @@ class Surreal extends Emitter {
         ),
       );
 
+  /// Used to check whether the instance is ready to be used or not
+  late Completer<void> _readyCompleter;
+
+  void _init() {
+    if (_readyCompleter.isCompleted) {
+      _readyCompleter = Completer<void>();
+    }
+    if (_token == null) {
+      _readyCompleter.complete();
+      return;
+    }
+    authenticate(_token!)
+        .then((_) => _readyCompleter.complete())
+        .catchError((error) => _readyCompleter.completeError(error));
+  }
+
   /// Connects to a local or remote database endpoint.
   void connect() {
     if (_isWebSocketInitialized) {
       return;
     }
     _isWebSocketInitialized = true;
+    _readyCompleter = Completer<void>();
 
     // Next we setup the websocket connection
     // and listen for events on the socket,
     // specifying whether logging is enabled.
     _webSocket = WebSocket(url);
+
+    // When the connection is opened we
+    // need to attempt authentication if
+    // a token has already been applied.
+    _webSocket.addListener(EventNames.open, (_) {
+      _init();
+    });
 
     // When we receive a socket message
     // we process it as a query response.
@@ -155,6 +180,15 @@ class Surreal extends Emitter {
       'method': method,
       'params': params,
     }));
+  }
+
+  /// Waits for the connection to the database to succeed.
+  Future<void> wait() {
+    assert(
+      _isWebSocketInitialized,
+      'This will happen if we forgot to call connect method',
+    );
+    return _webSocket.ready.then((value) => _readyCompleter.future);
   }
 
   /// Closes the persistent connection to the database.

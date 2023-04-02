@@ -43,11 +43,13 @@ void main() {
     test('Should able to connect to db', () async {
       db = Surreal(url: dbUrl);
       db.connect();
+      await db.wait();
     });
 
     test('Should able to signIn to db', () async {
       db = Surreal(url: dbUrl);
       db.connect();
+      await db.wait();
       await db.signIn(user: 'root', pass: 'root');
     });
   });
