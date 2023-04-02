@@ -1,5 +1,6 @@
 class RPCMethodNames {
   static const String kUse = 'use';
+  static const String kSignup = 'signup';
   static const String kSignIn = 'signin';
   static const String kAuthenticate = 'authenticate';
 }

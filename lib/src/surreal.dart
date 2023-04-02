@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'classes/emitter.dart';
 import 'classes/pinger.dart';
 import 'classes/web_socket.dart';
+import 'entities/authentication.dart';
 import 'errors/index.dart';
 import 'utils/constants.dart';
 
@@ -159,6 +160,29 @@ class Surreal extends Emitter {
       code: response.error!.code,
       message: response.error!.message,
     );
+  }
+
+  /// Signup using the [authentication] strategy applied
+  Future<void> signup(Authentication authentication) async {
+    assert(
+      _isWebSocketInitialized,
+      'This will happen if we forgot to call connect method',
+    );
+    final id = _uuid.v4();
+    _send(
+      id: id,
+      method: RPCMethodNames.kSignup,
+      params: [
+        authentication.toJson(),
+      ],
+    );
+    final response = await futureOnce(id);
+    if (response.error != null) {
+      throw AuthenticationError(
+        code: response.error!.code,
+        message: response.error!.message,
+      );
+    }
   }
 
   /// SignIn the user into database with the provided [user] & [pass]
