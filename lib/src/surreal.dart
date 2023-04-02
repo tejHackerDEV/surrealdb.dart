@@ -25,7 +25,12 @@ class Surreal extends Emitter {
 
   /// An custom websocket which is used as run RPCs
   /// on the database
-  WebSocket? _webSocket;
+  late WebSocket _webSocket;
+
+  /// Indicates whether [_webSocket] is initialized or not,
+  /// so before accessing [_webSocket], we need to make sure this value is
+  /// set to true.
+  bool _isWebSocketInitialized = false;
 
   Surreal._internal(
     this._url,
@@ -53,11 +58,11 @@ class Surreal extends Emitter {
 
   /// Connects to a local or remote database endpoint.
   void connect() {
-    if (_webSocket != null) {
-      throw AssertionError(
-        'WebSocket is already initiated, this should occur basically if connect method is called multiple times',
-      );
+    if (_isWebSocketInitialized) {
+      return;
     }
+    _isWebSocketInitialized = true;
+
     // Next we setup the websocket connection
     // and listen for events on the socket,
     // specifying whether logging is enabled.
@@ -65,7 +70,7 @@ class Surreal extends Emitter {
 
     // When we receive a socket message
     // we process it as a query response.
-    _webSocket!.addListener(EventNames.message, (response) {
+    _webSocket.addListener(EventNames.message, (response) {
       if (response == null) {
         throw 'Something went wrong';
       }
@@ -75,7 +80,7 @@ class Surreal extends Emitter {
     // Open the websocket for the first
     // time. This will automatically
     // attempt to reconnect on failure.
-    _webSocket!.open();
+    _webSocket.open();
   }
 
   /// SignIn the user into database with the provided [user] & [pass]
@@ -83,6 +88,10 @@ class Surreal extends Emitter {
     required String user,
     required String pass,
   }) async {
+    assert(
+      _isWebSocketInitialized,
+      'This will happen if we forgot to call connect method',
+    );
     final id = _uuid.v4();
     _send(
       id: id,
@@ -110,11 +119,27 @@ class Surreal extends Emitter {
     required String method,
     required List<Object> params,
   }) {
-    return _webSocket!.send(jsonEncode({
+    assert(
+      _isWebSocketInitialized,
+      'This will happen if we forgot to call connect method',
+    );
+    return _webSocket.send(jsonEncode({
       'id': id,
       'method': method,
       'params': params,
     }));
+  }
+
+  /// Closes the persistent connection to the database.
+  void close({
+    int? code,
+    String? reason,
+  }) {
+    if (!_isWebSocketInitialized) {
+      return;
+    }
+    _isWebSocketInitialized = false;
+    _webSocket.forceClose(code: code, reason: reason);
   }
 
   String get url => _url;

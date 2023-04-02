@@ -107,11 +107,14 @@ class WebSocket extends Emitter {
   /// Invoking this function will make the websocket completely
   /// & stop reconnecting
   void forceClose({
-    int code = 1000,
-    String reason = 'Some reason',
+    int? code,
+    String? reason,
   }) {
     _isForcedClosed = true;
-    _webSocketChannel.sink.close(code, reason);
+    _webSocketChannel.sink.close(
+      code ?? 1000,
+      reason ?? 'Some reason',
+    );
   }
 
   /// This will be resolved only, if the [websocket]

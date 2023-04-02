@@ -35,15 +35,20 @@ void main() {
   });
 
   group('DB connection test', () {
+    late Surreal db;
+
+    // Close the db connection everytime new test going to start
+    tearDown(() => db.close());
+
     test('Should able to connect to db', () async {
-      final db = Surreal(url: dbUrl);
+      db = Surreal(url: dbUrl);
       db.connect();
     });
 
     test('Should able to signIn to db', () async {
-      final db = Surreal(url: dbUrl);
+      db = Surreal(url: dbUrl);
       db.connect();
-      await db.signIn(user: 'user', pass: 'user');
+      await db.signIn(user: 'root', pass: 'root');
     });
   });
 }
