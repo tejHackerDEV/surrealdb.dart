@@ -55,7 +55,9 @@ void main() {
       db = Surreal(url: dbUrl);
       db.connect();
       await db.wait();
-      await db.signIn(user: user, pass: password);
+      await db.signIn(
+        Authentication.credentials(user: user, pass: password),
+      );
       await db.use(ns: namespace, db: databaseName);
     });
   });
@@ -76,7 +78,9 @@ void main() {
       db = Surreal(url: dbUrl);
       db.connect();
       await db.wait();
-      await db.signIn(user: user, pass: password);
+      await db.signIn(
+        Authentication.credentials(user: user, pass: password),
+      );
     });
   });
 }

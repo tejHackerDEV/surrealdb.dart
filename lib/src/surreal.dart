@@ -185,11 +185,8 @@ class Surreal extends Emitter {
     }
   }
 
-  /// SignIn the user into database with the provided [user] & [pass]
-  Future<void> signIn({
-    required String user,
-    required String pass,
-  }) async {
+  /// Signup using the [authentication] strategy applied
+  Future<void> signIn(Authentication authentication) async {
     assert(
       _isWebSocketInitialized,
       'This will happen if we forgot to call connect method',
@@ -199,10 +196,7 @@ class Surreal extends Emitter {
       id: id,
       method: RPCMethodNames.kSignIn,
       params: [
-        {
-          'user': user,
-          'pass': pass,
-        },
+        authentication.toJson(),
       ],
     );
     final response = await futureOnce(id);
