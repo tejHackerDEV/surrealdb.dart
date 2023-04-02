@@ -127,4 +127,29 @@ void main() {
       expect(results.length, 2);
     });
   });
+
+  group('DB select method test', () {
+    test('Should able to select all from db', () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      await db.select('person');
+    });
+
+    test('Should return empty records from the database', () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results = await db.select('person:someRandomId');
+      expect(results, isEmpty);
+    });
+  });
 }

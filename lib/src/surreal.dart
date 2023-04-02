@@ -313,6 +313,39 @@ class Surreal extends Emitter {
     return results;
   }
 
+  /// Selects all records in a table if [thing] is table name
+  /// or a specific record, if [thing] is record id from the database.
+  Future<Iterable<UnknownResult>> select(String thing) async {
+    final id = _uuid.v4();
+    _send(
+      id: id,
+      method: RPCMethodNames.kSelect,
+      params: [thing],
+    );
+
+    final response = await futureOnce(id);
+    if (response.error != null) {
+      throw SurrealError(
+        code: response.error!.code,
+        message: response.error!.message,
+      );
+    }
+
+    final result = response.result;
+    if (result is! Iterable) {
+      if (result is! UnknownResult) {
+        return Iterable.empty();
+      }
+      return [result];
+    }
+    return result.map((result) {
+      if (result is! UnknownResult) {
+        throw SurrealError(code: -1, message: (result as ErrResult).detail);
+      }
+      return result;
+    });
+  }
+
   /// Sends the data to the websocket by encoding to string
   Future<void> _send({
     required String id,
