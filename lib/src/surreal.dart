@@ -162,8 +162,8 @@ class Surreal extends Emitter {
     );
   }
 
-  /// Signup using the [authentication] strategy applied
-  Future<void> signup(Authentication authentication) async {
+  /// Signup to a specific [authentication] scope.
+  Future<void> signup(SignupAuthentication authentication) async {
     assert(
       _isWebSocketInitialized,
       'This will happen if we forgot to call connect method',
@@ -185,8 +185,8 @@ class Surreal extends Emitter {
     }
   }
 
-  /// Signup using the [authentication] strategy applied
-  Future<void> signIn(Authentication authentication) async {
+  /// SignIn using the [authentication] strategy applied
+  Future<void> signIn(SignInAuthentication authentication) async {
     assert(
       _isWebSocketInitialized,
       'This will happen if we forgot to call connect method',

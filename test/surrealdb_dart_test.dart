@@ -56,7 +56,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        Authentication.credentials(user: user, pass: password),
+        SignInAuthentication.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
     });
@@ -68,7 +68,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signup(
-        Authentication.credentials(user: 'dummy', pass: 'dummy'),
+        SignupAuthentication(ns: 'dummy', db: 'dummy', sc: 'dummy'),
       );
     });
   });
@@ -79,7 +79,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        Authentication.credentials(user: user, pass: password),
+        SignInAuthentication.credentials(user: user, pass: password),
       );
     });
   });
@@ -90,7 +90,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        Authentication.credentials(user: user, pass: password),
+        SignInAuthentication.credentials(user: user, pass: password),
       );
       await db.invalidate();
     });
