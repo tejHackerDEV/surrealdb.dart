@@ -14,6 +14,9 @@ class Surreal extends Emitter {
   /// The url of the database endpoint to connect to
   final String _url;
 
+  /// The authorization token
+  String? _token;
+
   /// An interval pinger used to keep
   /// connection alive through
   /// load-balancers and proxies.
@@ -34,6 +37,7 @@ class Surreal extends Emitter {
 
   Surreal._internal(
     this._url,
+    this._token,
     this._pinger,
   ) {
     _uuid = Uuid();
@@ -46,12 +50,14 @@ class Surreal extends Emitter {
   /// across components or controllers.
   factory Surreal({
     required String url,
+    String? token,
     Pinger? pinger,
   }) =>
       _instances.putIfAbsent(
         url,
         () => Surreal._internal(
           url,
+          token,
           pinger ?? Pinger(),
         ),
       );
@@ -110,7 +116,28 @@ class Surreal extends Emitter {
         message: response.error!.message,
       );
     }
-    return response.result!.toString();
+    return _token = response.result!.toString();
+  }
+
+  /// Authenticates the current connection with a JWT token.
+  Future<void> authenticate(String token) async {
+    final id = _uuid.v4();
+    _send(
+      id: id,
+      method: RPCMethodNames.kAuthenticate,
+      params: [
+        token,
+      ],
+    );
+
+    final response = await futureOnce(id);
+    if (response.error != null) {
+      throw AuthenticationError(
+        code: response.error!.code,
+        message: response.error!.message,
+      );
+    }
+    _token = token;
   }
 
   /// Sends the data to the websocket by encoding to string
@@ -143,6 +170,8 @@ class Surreal extends Emitter {
   }
 
   String get url => _url;
+
+  String? get token => _token;
 
   Pinger get pinger => _pinger;
 }
