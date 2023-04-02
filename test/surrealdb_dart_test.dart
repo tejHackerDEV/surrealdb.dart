@@ -53,4 +53,19 @@ void main() {
       await db.signIn(user: 'root', pass: 'root');
     });
   });
+
+  group('DB use method test', () {
+    late Surreal db;
+
+    // Close the db connection everytime new test going to start
+    tearDown(() => db.close());
+
+    test('Should able to switch the namespace & database', () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(user: 'root', pass: 'root');
+      await db.use(ns: 'test', db: 'test');
+    });
+  });
 }

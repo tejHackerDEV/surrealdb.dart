@@ -203,6 +203,32 @@ class Surreal extends Emitter {
     _webSocket.forceClose(code: code, reason: reason);
   }
 
+  /// Switch to a specific namespace and database.
+  Future<void> use({
+    required String ns,
+    required String db,
+  }) async {
+    final id = _uuid.v4();
+    _send(
+      id: id,
+      method: RPCMethodNames.kUse,
+      params: [
+        ns,
+        db,
+      ],
+    );
+
+    final response = await futureOnce(id);
+
+    if (response.error == null) {
+      return;
+    }
+    throw SurrealError(
+      code: response.error!.code,
+      message: response.error!.message,
+    );
+  }
+
   String get url => _url;
 
   String? get token => _token;
