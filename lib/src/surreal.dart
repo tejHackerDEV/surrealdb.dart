@@ -7,6 +7,7 @@ import 'classes/emitter.dart';
 import 'classes/pinger.dart';
 import 'classes/web_socket.dart';
 import 'entities/authentication.dart';
+import 'entities/result.dart';
 import 'errors/index.dart';
 import 'utils/constants.dart';
 
@@ -273,6 +274,43 @@ class Surreal extends Emitter {
         message: response.error!.message,
       );
     }
+  }
+
+  /// Runs a set of [sql] (SurrealQL) statements against the database.
+  /// & returns a [Iterable<OkResult>]
+  ///
+  /// <br>
+  /// [vars] is used to pass any dynamic variables which will be
+  /// later on inserted into the [sql] statements automatically
+  /// if any matching key found in the [sql] statements
+  Future<Iterable<OkResult>> query(
+    String sql, [
+    Map<String, dynamic>? vars,
+  ]) async {
+    final id = _uuid.v4();
+    _send(
+      id: id,
+      method: RPCMethodNames.kQuery,
+      params: [
+        sql,
+        if (vars != null) vars,
+      ],
+    );
+
+    final response = await futureOnce(id);
+    if (response.error != null) {
+      throw SurrealError(
+        code: response.error!.code,
+        message: response.error!.message,
+      );
+    }
+    final results = (response.result as Iterable<Result>).map((result) {
+      if (result is! OkResult) {
+        throw SurrealError(code: -1, message: (result as ErrResult).detail);
+      }
+      return result;
+    });
+    return results;
   }
 
   /// Sends the data to the websocket by encoding to string

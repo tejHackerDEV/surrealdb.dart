@@ -1,3 +1,5 @@
+import 'result.dart';
+
 class Response {
   final String id;
   final Object? result;
@@ -6,10 +8,13 @@ class Response {
   Response(this.id, this.result, this.error);
 
   factory Response.fromJson(Map<String, dynamic> json) {
+    final resultJson = json['result'];
     final errorJson = json['error'];
     return Response(
       json['id'],
-      json['result'],
+      (resultJson is! Iterable)
+          ? resultJson
+          : resultJson.map((json) => Result.fromJson(json)),
       errorJson == null ? null : Error.fromJson(errorJson),
     );
   }

@@ -110,4 +110,21 @@ void main() {
       });
     });
   });
+
+  group('DB query method test', () {
+    test('Should able to create data into db', () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results =
+          await db.query('CREATE person; SELECT * FROM type::table(\$tb);', {
+        'tb': 'person',
+      });
+      expect(results.length, 2);
+    });
+  });
 }
