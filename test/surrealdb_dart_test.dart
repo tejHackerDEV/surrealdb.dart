@@ -83,4 +83,16 @@ void main() {
       );
     });
   });
+
+  group('DB invalidate method test', () {
+    test('Should invalidate the current session', () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        Authentication.credentials(user: user, pass: password),
+      );
+      await db.invalidate();
+    });
+  });
 }

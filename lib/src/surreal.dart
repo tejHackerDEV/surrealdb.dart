@@ -208,6 +208,27 @@ class Surreal extends Emitter {
     }
   }
 
+  /// Invalidates the authentication for the current connection.
+  Future<void> invalidate() async {
+    assert(
+      _isWebSocketInitialized,
+      'This will happen if we forgot to call connect method',
+    );
+    final id = _uuid.v4();
+    _send(
+      id: id,
+      method: RPCMethodNames.kInvalidate,
+      params: [],
+    );
+    final response = await futureOnce(id);
+    if (response.error != null) {
+      throw AuthenticationError(
+        code: response.error!.code,
+        message: response.error!.message,
+      );
+    }
+  }
+
   /// Authenticates the current connection with a JWT token.
   Future<void> authenticate(String token) async {
     final id = _uuid.v4();
