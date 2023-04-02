@@ -33,4 +33,17 @@ void main() {
       expect(db.pinger.duration, isNot(customerPingerDuration));
     });
   });
+
+  group('DB connection test', () {
+    test('Should able to connect to db', () async {
+      final db = Surreal(url: dbUrl);
+      db.connect();
+    });
+
+    test('Should able to signIn to db', () async {
+      final db = Surreal(url: dbUrl);
+      db.connect();
+      await db.signIn(user: 'user', pass: 'user');
+    });
+  });
 }
