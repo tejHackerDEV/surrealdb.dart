@@ -114,6 +114,53 @@ class Surreal extends Emitter {
     _webSocket.open();
   }
 
+  /// Waits for the connection to the database to succeed.
+  Future<void> wait() {
+    assert(
+      _isWebSocketInitialized,
+      'This will happen if we forgot to call connect method',
+    );
+    return _webSocket.ready.then((value) => _readyCompleter.future);
+  }
+
+  /// Closes the persistent connection to the database.
+  void close({
+    int? code,
+    String? reason,
+  }) {
+    if (!_isWebSocketInitialized) {
+      return;
+    }
+    _isWebSocketInitialized = false;
+    _webSocket.forceClose(code: code, reason: reason);
+  }
+
+  /// Switch to a specific namespace and database.
+  Future<void> use({
+    required String ns,
+    required String db,
+  }) async {
+    final id = _uuid.v4();
+    _send(
+      id: id,
+      method: RPCMethodNames.kUse,
+      params: [
+        ns,
+        db,
+      ],
+    );
+
+    final response = await futureOnce(id);
+
+    if (response.error == null) {
+      return;
+    }
+    throw SurrealError(
+      code: response.error!.code,
+      message: response.error!.message,
+    );
+  }
+
   /// SignIn the user into database with the provided [user] & [pass]
   Future<void> signIn({
     required String user,
@@ -179,53 +226,6 @@ class Surreal extends Emitter {
       'method': method,
       'params': params,
     }));
-  }
-
-  /// Waits for the connection to the database to succeed.
-  Future<void> wait() {
-    assert(
-      _isWebSocketInitialized,
-      'This will happen if we forgot to call connect method',
-    );
-    return _webSocket.ready.then((value) => _readyCompleter.future);
-  }
-
-  /// Closes the persistent connection to the database.
-  void close({
-    int? code,
-    String? reason,
-  }) {
-    if (!_isWebSocketInitialized) {
-      return;
-    }
-    _isWebSocketInitialized = false;
-    _webSocket.forceClose(code: code, reason: reason);
-  }
-
-  /// Switch to a specific namespace and database.
-  Future<void> use({
-    required String ns,
-    required String db,
-  }) async {
-    final id = _uuid.v4();
-    _send(
-      id: id,
-      method: RPCMethodNames.kUse,
-      params: [
-        ns,
-        db,
-      ],
-    );
-
-    final response = await futureOnce(id);
-
-    if (response.error == null) {
-      return;
-    }
-    throw SurrealError(
-      code: response.error!.code,
-      message: response.error!.message,
-    );
   }
 
   String get url => _url;
