@@ -8,6 +8,11 @@ class SurrealError extends Error {
     this.name = 'SurrealError',
     this.message,
   });
+
+  @override
+  String toString() {
+    return 'SurrealError{code: $code, name: $name, message: $message}';
+  }
 }
 
 class AuthenticationError extends SurrealError {
