@@ -115,7 +115,7 @@ class Surreal extends Emitter {
   }
 
   /// SignIn the user into database with the provided [user] & [pass]
-  Future<String> signIn({
+  Future<void> signIn({
     required String user,
     required String pass,
   }) async {
@@ -141,7 +141,6 @@ class Surreal extends Emitter {
         message: response.error!.message,
       );
     }
-    return _token = response.result!.toString();
   }
 
   /// Authenticates the current connection with a JWT token.
