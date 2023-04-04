@@ -393,6 +393,53 @@ class Surreal extends Emitter {
     });
   }
 
+  /// Update a single or multiple records in the database
+  /// with the [data] provided.
+  ///
+  /// <br>
+  /// If [thing] is only table name then all records in the table
+  /// will be updated
+  ///
+  /// <br>
+  /// If [thing] is a table name along with some id then, only the
+  /// matching record with the id will be updated.
+  Future<Iterable<UnknownResult>> update(
+    String thing,
+    Map<String, dynamic> data,
+  ) async {
+    final id = _uuid.v4();
+    _send(
+      id: id,
+      method: RPCMethodNames.kUpdate,
+      params: [
+        thing,
+        data,
+      ],
+    );
+
+    final response = await futureOnce(id);
+    if (response.error != null) {
+      throw SurrealError(
+        code: response.error!.code,
+        message: response.error!.message,
+      );
+    }
+
+    final result = response.result;
+    if (result is! Iterable) {
+      if (result is! UnknownResult) {
+        return Iterable.empty();
+      }
+      return [result];
+    }
+    return result.map((result) {
+      if (result is! UnknownResult) {
+        throw SurrealError(code: -1, message: (result as ErrResult).detail);
+      }
+      return result;
+    });
+  }
+
   /// Sends the data to the websocket by encoding to string
   Future<void> _send({
     required String id,

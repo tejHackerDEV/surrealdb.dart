@@ -153,9 +153,16 @@ void main() {
     });
   });
 
-  group('DB create method test', () {
-    final thing = 'person';
+  final thing = 'person';
+  final data = {
+    'name': 'tejHackerDev',
+    'settings': {
+      'active': true,
+      'marketing': true,
+    },
+  };
 
+  group('DB create method test', () {
     test('Should able to create record with randomId & no data in the database',
         () async {
       db = Surreal(url: dbUrl);
@@ -191,14 +198,6 @@ void main() {
         expect(element.value['id'], '$thing:$someStaticId');
       }
     });
-
-    final data = {
-      'name': 'tejHackerDev',
-      'settings': {
-        'active': true,
-        'marketing': true,
-      },
-    };
 
     test('Should able to create record with randomId & data in the database',
         () async {
@@ -237,6 +236,93 @@ void main() {
           'id': '$thing:$someStaticId',
           ...data,
         });
+      }
+    });
+  });
+
+  group('DB update method test', () {
+    String? recordId;
+
+    test('Should able to update all records in the database with empty data',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results = await db.update(thing, {});
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element.value, isMap);
+        expect(element.value.length, 1);
+        recordId = element.value['id'];
+        expect(recordId, startsWith('$thing:'));
+      }
+    });
+
+    test(
+        'Should able to update a specific record in the database with some data',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results = await db.update(recordId!, data);
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element.value, isMap);
+        expect(recordId, startsWith('$thing:'));
+        expect(element.value, {
+          'id': recordId,
+          ...data,
+        });
+      }
+    });
+
+    test('Should able to update all records in the database with some data',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results = await db.update(thing, data);
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element.value, isMap);
+        recordId = element.value['id'];
+        expect(recordId, startsWith('$thing:'));
+        expect(element.value, {
+          'id': recordId,
+          ...data,
+        });
+      }
+    });
+
+    test(
+        'Should able to update a specific record in the database with empty data',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results = await db.update(thing, {});
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element.value, isMap);
+        expect(element.value.length, 1);
+        recordId = element.value['id'];
+        expect(recordId, startsWith('$thing:'));
       }
     });
   });
