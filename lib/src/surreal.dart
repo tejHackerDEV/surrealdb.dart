@@ -97,8 +97,11 @@ class Surreal extends Emitter {
 
     // When the connection is opened we
     // need to attempt authentication if
-    // a token has already been applied.
+    // a token has already been applied
+    // and emit the status change.
     _webSocket.addListener(EventNames.open, (_) {
+      emit(EventNames.open, null);
+
       _init();
 
       _pinger.start(ping);
@@ -106,7 +109,10 @@ class Surreal extends Emitter {
 
     // When the connection is closed we
     // change the relevant properties
+    // and emit the status change
     _webSocket.addListener(EventNames.close, (_) {
+      emit(EventNames.close, null);
+
       _pinger.stop();
     });
 
