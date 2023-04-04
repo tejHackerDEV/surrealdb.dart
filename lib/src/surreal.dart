@@ -100,6 +100,14 @@ class Surreal extends Emitter {
     // a token has already been applied.
     _webSocket.addListener(EventNames.open, (_) {
       _init();
+
+      _pinger.start(ping);
+    });
+
+    // When the connection is closed we
+    // change the relevant properties
+    _webSocket.addListener(EventNames.close, (_) {
+      _pinger.stop();
     });
 
     // When we receive a socket message
@@ -136,6 +144,16 @@ class Surreal extends Emitter {
     }
     _isWebSocketInitialized = false;
     _webSocket.forceClose(code: code, reason: reason);
+  }
+
+  /// Ping SurrealDB instance
+  Future<void> ping() async {
+    final id = _uuid.v4();
+    return _send(
+      id: id,
+      method: RPCMethodNames.kPing,
+      params: [],
+    );
   }
 
   /// Switch to a specific namespace and database.
