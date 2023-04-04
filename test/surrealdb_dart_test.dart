@@ -427,4 +427,77 @@ void main() {
       }
     });
   });
+
+  group('DB patch method test', () {
+    test(
+        'Should able to replace `created_at` field in all records of the database ',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results = await db.patch(
+        thing,
+        [
+          JsonPatch.replace(
+            path: '/created_at',
+            value: DateTime.now().toIso8601String(),
+          ),
+        ],
+      );
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element, isNotEmpty);
+        for (final element in element) {
+          expect(element.op, isNotNull);
+          expect(element.path, isNotNull);
+          if (element.op != PatchOp.remove) {
+            expect(element.value, isNotNull);
+          }
+        }
+      }
+    });
+
+    test(
+        'Should able to apply multiple patches at once for all records of the database ',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results = await db.patch(
+        thing,
+        [
+          JsonPatch.replace(
+            path: '/settings/active',
+            value: true,
+          ),
+          JsonPatch.add(
+            path: '/tags',
+            value: ['hacker', 'developer'],
+          ),
+          JsonPatch.remove(
+            path: '/settings/marketing',
+          ),
+        ],
+      );
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element, isNotEmpty);
+        for (final element in element) {
+          expect(element.op, isNotNull);
+          expect(element.path, isNotNull);
+          if (element.op != PatchOp.remove) {
+            expect(element.value, isNotNull);
+          }
+        }
+      }
+    });
+  });
 }

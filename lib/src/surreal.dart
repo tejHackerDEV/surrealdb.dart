@@ -7,6 +7,7 @@ import 'classes/emitter.dart';
 import 'classes/pinger.dart';
 import 'classes/web_socket.dart';
 import 'entities/authentication.dart';
+import 'entities/json_patch.dart';
 import 'entities/result.dart';
 import 'errors/index.dart';
 import 'utils/constants.dart';
@@ -488,6 +489,56 @@ class Surreal extends Emitter {
         throw SurrealError(code: -1, message: (result as ErrResult).detail);
       }
       return result;
+    });
+  }
+
+  /// Applies [JSON Patch](https://jsonpatch.com/) changes to all records,
+  /// or a specific record, in the database.
+  ///
+  /// <br>
+  /// If [thing] is only table name then [patches] gets
+  /// applied to all records in the table
+  ///
+  /// <br>
+  /// If [thing] is a table name along with some id then,
+  /// then [patches] gets applied only with the matching record with the id.
+  Future<Iterable<Iterable<PatchResult>>> patch(
+    String thing,
+    Iterable<JsonPatch> patches,
+  ) async {
+    final id = _uuid.v4();
+    _send(
+      id: id,
+      method: RPCMethodNames.kModify,
+      params: [
+        thing,
+        List.generate(
+          patches.length,
+          (index) => patches.elementAt(index).toJson(),
+        ),
+      ],
+    );
+
+    final response = await futureOnce(id);
+    if (response.error != null) {
+      throw SurrealError(
+        code: response.error!.code,
+        message: response.error!.message,
+      );
+    }
+
+    final result = response.result;
+    if (result is! Iterable) {
+      if (result is! Iterable) {
+        return Iterable.empty();
+      }
+      return [result.cast<PatchResult>()];
+    }
+    return result.map((result) {
+      if (result is! Iterable) {
+        throw SurrealError(code: -1, message: (result as ErrResult).detail);
+      }
+      return result.cast<PatchResult>();
     });
   }
 

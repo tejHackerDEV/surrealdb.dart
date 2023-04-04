@@ -15,7 +15,12 @@ class Response {
     } else if (resultJson is! Iterable) {
       result = Result.fromJson(resultJson);
     } else {
-      result = resultJson.map((json) => Result.fromJson(json));
+      result = resultJson.map((json) {
+        if (json is! Iterable) {
+          return Result.fromJson(json);
+        }
+        return json.map((json) => Result.fromJson(json, isPatchResult: true));
+      });
     }
     final errorJson = json['error'];
     return Response(

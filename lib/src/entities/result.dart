@@ -1,7 +1,10 @@
+import '../../surrealdb_dart.dart';
+
 enum ResultStatus {
   err,
   ok,
   unknown,
+  patch,
 }
 
 class Result {
@@ -9,7 +12,13 @@ class Result {
 
   Result(this.status);
 
-  factory Result.fromJson(Map<String, dynamic> json) {
+  factory Result.fromJson(
+    Map<String, dynamic> json, {
+    bool isPatchResult = false,
+  }) {
+    if (isPatchResult) {
+      return PatchResult.fromJson(json);
+    }
     if (json['status'] == 'ERR') {
       return ErrResult.fromJson(json);
     }
@@ -107,5 +116,29 @@ class UnknownResult extends Result {
   @override
   String toString() {
     return 'UnknownResult{value: $value}';
+  }
+}
+
+class PatchResult extends Result {
+  final PatchOp op;
+  final String path;
+  final String? value;
+
+  PatchResult._internal(super.status, this.op, this.path, this.value);
+
+  factory PatchResult.fromJson(Map<String, dynamic> json) {
+    return PatchResult._internal(
+      ResultStatus.patch,
+      PatchOp.values.firstWhere(
+        (patchOp) => patchOp.name.toLowerCase() == json['op'].toLowerCase(),
+      ),
+      json['path'],
+      json['value']?.toString(),
+    );
+  }
+
+  @override
+  String toString() {
+    return 'PatchResult{op: $op, path: $path, value: $value}';
   }
 }
