@@ -500,4 +500,17 @@ void main() {
       }
     });
   });
+
+  group('DB delete method test', () {
+    test('Should able to delete all from db', () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      await db.delete('person');
+    });
+  });
 }

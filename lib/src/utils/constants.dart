@@ -11,6 +11,7 @@ class RPCMethodNames {
   static const String kUpdate = 'update';
   static const String kChange = 'change';
   static const String kModify = 'modify';
+  static const String kDelete = 'delete';
 }
 
 class EventNames {
