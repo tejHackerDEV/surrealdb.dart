@@ -440,6 +440,57 @@ class Surreal extends Emitter {
     });
   }
 
+  /// Merges  the [data] provided with single or multiple
+  /// records in the database
+  ///
+  /// <br>
+  /// If [thing] is only table name then [data] gets
+  /// merged with all records in the table
+  ///
+  /// <br>
+  /// If [thing] is a table name along with some id then,
+  /// then [data] gets merged only with the matching record with the id.
+  Future<Iterable<UnknownResult>> merge(
+    String thing,
+    Map<String, dynamic> data,
+  ) async {
+    assert(
+      data.isNotEmpty,
+      'Merging empty data with the record/records won\'t do anything',
+    );
+    final id = _uuid.v4();
+    _send(
+      id: id,
+      method: RPCMethodNames.kChange,
+      params: [
+        thing,
+        data,
+      ],
+    );
+
+    final response = await futureOnce(id);
+    if (response.error != null) {
+      throw SurrealError(
+        code: response.error!.code,
+        message: response.error!.message,
+      );
+    }
+
+    final result = response.result;
+    if (result is! Iterable) {
+      if (result is! UnknownResult) {
+        return Iterable.empty();
+      }
+      return [result];
+    }
+    return result.map((result) {
+      if (result is! UnknownResult) {
+        throw SurrealError(code: -1, message: (result as ErrResult).detail);
+      }
+      return result;
+    });
+  }
+
   /// Sends the data to the websocket by encoding to string
   Future<void> _send({
     required String id,

@@ -9,6 +9,7 @@ class RPCMethodNames {
   static const String kSelect = 'select';
   static const String kCreate = 'create';
   static const String kUpdate = 'update';
+  static const String kChange = 'change';
 }
 
 class EventNames {

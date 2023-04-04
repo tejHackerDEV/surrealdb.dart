@@ -326,4 +326,105 @@ void main() {
       }
     });
   });
+
+  group('DB merge method test', () {
+    String? recordId;
+
+    final dataWithCreatedAt = {
+      'created_at': DateTime.now().toIso8601String(),
+    };
+
+    test(
+        'Should able to merge `created_at` field to all records in the database ',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results = await db.merge(thing, dataWithCreatedAt);
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element.value, isMap);
+        recordId = element.value['id'];
+        expect(recordId, startsWith('$thing:'));
+        for (final entry in dataWithCreatedAt.entries) {
+          expect(element.value.containsKey(entry.key), isTrue);
+        }
+      }
+    });
+
+    test(
+        'Should able to merge `created_at` field to specific record in the database ',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results = await db.merge(recordId!, dataWithCreatedAt);
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element.value, isMap);
+        expect(element.value['id'], recordId);
+        for (final entry in dataWithCreatedAt.entries) {
+          expect(element.value.containsKey(entry.key), isTrue);
+        }
+      }
+    });
+
+    final complexData = {
+      'updated_at': DateTime.now().toIso8601String(),
+      'settings': {
+        'active': false,
+      }
+    };
+
+    test(
+        'Should able to merge complex data fields to all records in the database',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results = await db.merge(thing, complexData);
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element.value, isMap);
+        recordId = element.value['id'];
+        expect(recordId, startsWith('$thing:'));
+        for (final entry in dataWithCreatedAt.entries) {
+          expect(element.value.containsKey(entry.key), isTrue);
+        }
+      }
+    });
+
+    test(
+        'Should able to merge complex data fields to specific record in the database ',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results = await db.merge(recordId!, complexData);
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element.value, isMap);
+        expect(element.value['id'], recordId);
+        for (final entry in dataWithCreatedAt.entries) {
+          expect(element.value.containsKey(entry.key), isTrue);
+        }
+      }
+    });
+  });
 }
