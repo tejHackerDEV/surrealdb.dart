@@ -324,7 +324,7 @@ class Surreal extends Emitter {
 
   /// Selects all records in a table if [thing] is table name
   /// or a specific record, if [thing] is record id from the database.
-  Future<Iterable<UnknownResult>> select(String thing) async {
+  Future<Iterable<DynamicResult>> select(String thing) async {
     final id = _uuid.v4();
     _send(
       id: id,
@@ -342,13 +342,13 @@ class Surreal extends Emitter {
 
     final result = response.result;
     if (result is! Iterable) {
-      if (result is! UnknownResult) {
+      if (result is! DynamicResult) {
         return Iterable.empty();
       }
       return [result];
     }
     return result.map((result) {
-      if (result is! UnknownResult) {
+      if (result is! DynamicResult) {
         throw SurrealError(code: -1, message: (result as ErrResult).detail);
       }
       return result;
@@ -365,7 +365,7 @@ class Surreal extends Emitter {
   /// If [thing] is a table name along with some id, then the provided
   /// id will be used as the record id for the record ie.,
   /// created in the database.
-  Future<Iterable<UnknownResult>> create(
+  Future<Iterable<DynamicResult>> create(
     String thing, [
     Map<String, dynamic>? data,
   ]) async {
@@ -389,13 +389,13 @@ class Surreal extends Emitter {
 
     final result = response.result;
     if (result is! Iterable) {
-      if (result is! UnknownResult) {
+      if (result is! DynamicResult) {
         return Iterable.empty();
       }
       return [result];
     }
     return result.map((result) {
-      if (result is! UnknownResult) {
+      if (result is! DynamicResult) {
         throw SurrealError(code: -1, message: (result as ErrResult).detail);
       }
       return result;
@@ -412,7 +412,7 @@ class Surreal extends Emitter {
   /// <br>
   /// If [thing] is a table name along with some id then, only the
   /// matching record with the id will be updated.
-  Future<Iterable<UnknownResult>> update(
+  Future<Iterable<DynamicResult>> update(
     String thing,
     Map<String, dynamic> data,
   ) async {
@@ -436,13 +436,13 @@ class Surreal extends Emitter {
 
     final result = response.result;
     if (result is! Iterable) {
-      if (result is! UnknownResult) {
+      if (result is! DynamicResult) {
         return Iterable.empty();
       }
       return [result];
     }
     return result.map((result) {
-      if (result is! UnknownResult) {
+      if (result is! DynamicResult) {
         throw SurrealError(code: -1, message: (result as ErrResult).detail);
       }
       return result;
@@ -459,7 +459,7 @@ class Surreal extends Emitter {
   /// <br>
   /// If [thing] is a table name along with some id then,
   /// then [data] gets merged only with the matching record with the id.
-  Future<Iterable<UnknownResult>> merge(
+  Future<Iterable<DynamicResult>> merge(
     String thing,
     Map<String, dynamic> data,
   ) async {
@@ -487,13 +487,13 @@ class Surreal extends Emitter {
 
     final result = response.result;
     if (result is! Iterable) {
-      if (result is! UnknownResult) {
+      if (result is! DynamicResult) {
         return Iterable.empty();
       }
       return [result];
     }
     return result.map((result) {
-      if (result is! UnknownResult) {
+      if (result is! DynamicResult) {
         throw SurrealError(code: -1, message: (result as ErrResult).detail);
       }
       return result;
@@ -555,7 +555,7 @@ class Surreal extends Emitter {
   ///
   /// <br>
   /// Finally returns the deleted records
-  Future<Iterable<UnknownResult>> delete(String thing) async {
+  Future<Iterable<DynamicResult>> delete(String thing) async {
     final id = _uuid.v4();
     _send(
       id: id,
@@ -573,13 +573,13 @@ class Surreal extends Emitter {
 
     final result = response.result;
     if (result is! Iterable) {
-      if (result is! UnknownResult) {
+      if (result is! DynamicResult) {
         return Iterable.empty();
       }
       return [result];
     }
     return result.map((result) {
-      if (result is! UnknownResult) {
+      if (result is! DynamicResult) {
         throw SurrealError(code: -1, message: (result as ErrResult).detail);
       }
       return result;

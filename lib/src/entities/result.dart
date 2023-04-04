@@ -3,7 +3,7 @@ import '../../surrealdb_dart.dart';
 enum ResultStatus {
   err,
   ok,
-  unknown,
+  dynamic,
   patch,
 }
 
@@ -25,7 +25,7 @@ class Result {
     if (json['status'] == 'OK') {
       return OkResult.fromJson(json);
     }
-    return UnknownResult.fromJson(json);
+    return DynamicResult.fromJson(json);
   }
 
   @override
@@ -91,13 +91,13 @@ class ErrResult extends Result {
   }
 }
 
-class UnknownResult extends Result {
+class DynamicResult extends Result {
   final dynamic value;
-  UnknownResult._internal(super.status, this.value);
+  DynamicResult._internal(super.status, this.value);
 
-  factory UnknownResult.fromJson(Map<String, dynamic> json) {
-    return UnknownResult._internal(
-      ResultStatus.unknown,
+  factory DynamicResult.fromJson(Map<String, dynamic> json) {
+    return DynamicResult._internal(
+      ResultStatus.dynamic,
       json,
     );
   }
@@ -106,7 +106,7 @@ class UnknownResult extends Result {
   bool operator ==(Object other) =>
       identical(this, other) ||
       super == other &&
-          other is UnknownResult &&
+          other is DynamicResult &&
           runtimeType == other.runtimeType &&
           value == other.value;
 
