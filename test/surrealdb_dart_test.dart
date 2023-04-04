@@ -152,4 +152,92 @@ void main() {
       expect(results, isEmpty);
     });
   });
+
+  group('DB create method test', () {
+    final thing = 'person';
+
+    test('Should able to create record with randomId & no data in the database',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results = await db.create(thing);
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element.value, isMap);
+        expect(element.value['id'], startsWith('$thing:'));
+      }
+    });
+
+    test(
+        'Should able to create record with specificId & no data in the database',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final someStaticId = DateTime.now().millisecondsSinceEpoch;
+      final results = await db.create('$thing:$someStaticId');
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element.value, isMap);
+        expect(element.value['id'], '$thing:$someStaticId');
+      }
+    });
+
+    final data = {
+      'name': 'tejHackerDev',
+      'settings': {
+        'active': true,
+        'marketing': true,
+      },
+    };
+
+    test('Should able to create record with randomId & data in the database',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final results = await db.create(thing, data);
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element.value, isMap);
+        final recordId = (element.value as Map).remove('id');
+        expect(recordId, startsWith('$thing:'));
+        expect(element.value, data);
+      }
+    });
+
+    test('Should able to create record with specificId & data in the database',
+        () async {
+      db = Surreal(url: dbUrl);
+      db.connect();
+      await db.wait();
+      await db.signIn(
+        SignInAuthentication.credentials(user: user, pass: password),
+      );
+      await db.use(ns: namespace, db: databaseName);
+      final someStaticId = DateTime.now().millisecondsSinceEpoch;
+      final results = await db.create('$thing:$someStaticId', data);
+      expect(results, isNotEmpty);
+      for (final element in results) {
+        expect(element.value, isMap);
+        expect(element.value, {
+          'id': '$thing:$someStaticId',
+          ...data,
+        });
+      }
+    });
+  });
 }

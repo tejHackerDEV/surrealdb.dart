@@ -9,12 +9,18 @@ class Response {
 
   factory Response.fromJson(Map<String, dynamic> json) {
     final resultJson = json['result'];
+    Object? result;
+    if (resultJson == null) {
+      result = null;
+    } else if (resultJson is! Iterable) {
+      result = Result.fromJson(resultJson);
+    } else {
+      result = resultJson.map((json) => Result.fromJson(json));
+    }
     final errorJson = json['error'];
     return Response(
       json['id'],
-      (resultJson is! Iterable)
-          ? resultJson
-          : resultJson.map((json) => Result.fromJson(json)),
+      result,
       errorJson == null ? null : Error.fromJson(errorJson),
     );
   }

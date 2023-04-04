@@ -346,6 +346,53 @@ class Surreal extends Emitter {
     });
   }
 
+  /// Creates a record in the database with any [data] if provided.
+  ///
+  /// <br>
+  /// If [thing] is a table name then random id will be given to the
+  /// record ie., created in the database.
+  ///
+  /// <br>
+  /// If [thing] is a table name along with some id, then the provided
+  /// id will be used as the record id for the record ie.,
+  /// created in the database.
+  Future<Iterable<UnknownResult>> create(
+    String thing, [
+    Map<String, dynamic>? data,
+  ]) async {
+    final id = _uuid.v4();
+    _send(
+      id: id,
+      method: RPCMethodNames.kCreate,
+      params: [
+        thing,
+        if (data != null) data,
+      ],
+    );
+
+    final response = await futureOnce(id);
+    if (response.error != null) {
+      throw SurrealError(
+        code: response.error!.code,
+        message: response.error!.message,
+      );
+    }
+
+    final result = response.result;
+    if (result is! Iterable) {
+      if (result is! UnknownResult) {
+        return Iterable.empty();
+      }
+      return [result];
+    }
+    return result.map((result) {
+      if (result is! UnknownResult) {
+        throw SurrealError(code: -1, message: (result as ErrResult).detail);
+      }
+      return result;
+    });
+  }
+
   /// Sends the data to the websocket by encoding to string
   Future<void> _send({
     required String id,

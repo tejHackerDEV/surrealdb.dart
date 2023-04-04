@@ -7,6 +7,7 @@ class RPCMethodNames {
   static const String kLet = 'let';
   static const String kQuery = 'query';
   static const String kSelect = 'select';
+  static const String kCreate = 'create';
 }
 
 class EventNames {
