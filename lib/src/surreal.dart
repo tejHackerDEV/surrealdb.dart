@@ -305,7 +305,15 @@ class Surreal extends Emitter {
         message: response.error!.message,
       );
     }
-    final results = (response.result as Iterable<Result>).map((result) {
+    final result = response.result;
+    if (result is! Iterable) {
+      if (result is! OkResult) {
+        return Iterable.empty();
+      }
+      return [result];
+    }
+
+    final results = result.map((result) {
       if (result is! OkResult) {
         throw SurrealError(code: -1, message: (result as ErrResult).detail);
       }
