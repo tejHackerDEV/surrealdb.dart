@@ -174,9 +174,9 @@ void main() {
       await db.use(ns: namespace, db: databaseName);
       final results = await db.create(thing);
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element.value, isMap);
-        expect(element.value['id'], startsWith('$thing:'));
+      for (final result in results) {
+        expect(result.value, isMap);
+        expect(result.value['id'], startsWith('$thing:'));
       }
     });
 
@@ -193,9 +193,9 @@ void main() {
       final someStaticId = DateTime.now().millisecondsSinceEpoch;
       final results = await db.create('$thing:$someStaticId');
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element.value, isMap);
-        expect(element.value['id'], '$thing:$someStaticId');
+      for (final result in results) {
+        expect(result.value, isMap);
+        expect(result.value['id'], '$thing:$someStaticId');
       }
     });
 
@@ -210,11 +210,11 @@ void main() {
       await db.use(ns: namespace, db: databaseName);
       final results = await db.create(thing, data);
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element.value, isMap);
-        final recordId = (element.value as Map).remove('id');
+      for (final result in results) {
+        expect(result.value, isMap);
+        final recordId = (result.value as Map).remove('id');
         expect(recordId, startsWith('$thing:'));
-        expect(element.value, data);
+        expect(result.value, data);
       }
     });
 
@@ -230,9 +230,9 @@ void main() {
       final someStaticId = DateTime.now().millisecondsSinceEpoch;
       final results = await db.create('$thing:$someStaticId', data);
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element.value, isMap);
-        expect(element.value, {
+      for (final result in results) {
+        expect(result.value, isMap);
+        expect(result.value, {
           'id': '$thing:$someStaticId',
           ...data,
         });
@@ -254,10 +254,10 @@ void main() {
       await db.use(ns: namespace, db: databaseName);
       final results = await db.update(thing, {});
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element.value, isMap);
-        expect(element.value.length, 1);
-        recordId = element.value['id'];
+      for (final result in results) {
+        expect(result.value, isMap);
+        expect(result.value.length, 1);
+        recordId = result.value['id'];
         expect(recordId, startsWith('$thing:'));
       }
     });
@@ -274,10 +274,10 @@ void main() {
       await db.use(ns: namespace, db: databaseName);
       final results = await db.update(recordId!, data);
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element.value, isMap);
+      for (final result in results) {
+        expect(result.value, isMap);
         expect(recordId, startsWith('$thing:'));
-        expect(element.value, {
+        expect(result.value, {
           'id': recordId,
           ...data,
         });
@@ -295,11 +295,11 @@ void main() {
       await db.use(ns: namespace, db: databaseName);
       final results = await db.update(thing, data);
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element.value, isMap);
-        recordId = element.value['id'];
+      for (final result in results) {
+        expect(result.value, isMap);
+        recordId = result.value['id'];
         expect(recordId, startsWith('$thing:'));
-        expect(element.value, {
+        expect(result.value, {
           'id': recordId,
           ...data,
         });
@@ -318,10 +318,10 @@ void main() {
       await db.use(ns: namespace, db: databaseName);
       final results = await db.update(thing, {});
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element.value, isMap);
-        expect(element.value.length, 1);
-        recordId = element.value['id'];
+      for (final result in results) {
+        expect(result.value, isMap);
+        expect(result.value.length, 1);
+        recordId = result.value['id'];
         expect(recordId, startsWith('$thing:'));
       }
     });
@@ -346,12 +346,12 @@ void main() {
       await db.use(ns: namespace, db: databaseName);
       final results = await db.merge(thing, dataWithCreatedAt);
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element.value, isMap);
-        recordId = element.value['id'];
+      for (final result in results) {
+        expect(result.value, isMap);
+        recordId = result.value['id'];
         expect(recordId, startsWith('$thing:'));
         for (final entry in dataWithCreatedAt.entries) {
-          expect(element.value.containsKey(entry.key), isTrue);
+          expect(result.value.containsKey(entry.key), isTrue);
         }
       }
     });
@@ -368,11 +368,11 @@ void main() {
       await db.use(ns: namespace, db: databaseName);
       final results = await db.merge(recordId!, dataWithCreatedAt);
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element.value, isMap);
-        expect(element.value['id'], recordId);
+      for (final result in results) {
+        expect(result.value, isMap);
+        expect(result.value['id'], recordId);
         for (final entry in dataWithCreatedAt.entries) {
-          expect(element.value.containsKey(entry.key), isTrue);
+          expect(result.value.containsKey(entry.key), isTrue);
         }
       }
     });
@@ -396,12 +396,12 @@ void main() {
       await db.use(ns: namespace, db: databaseName);
       final results = await db.merge(thing, complexData);
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element.value, isMap);
-        recordId = element.value['id'];
+      for (final result in results) {
+        expect(result.value, isMap);
+        recordId = result.value['id'];
         expect(recordId, startsWith('$thing:'));
         for (final entry in dataWithCreatedAt.entries) {
-          expect(element.value.containsKey(entry.key), isTrue);
+          expect(result.value.containsKey(entry.key), isTrue);
         }
       }
     });
@@ -418,11 +418,11 @@ void main() {
       await db.use(ns: namespace, db: databaseName);
       final results = await db.merge(recordId!, complexData);
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element.value, isMap);
-        expect(element.value['id'], recordId);
+      for (final result in results) {
+        expect(result.value, isMap);
+        expect(result.value['id'], recordId);
         for (final entry in dataWithCreatedAt.entries) {
-          expect(element.value.containsKey(entry.key), isTrue);
+          expect(result.value.containsKey(entry.key), isTrue);
         }
       }
     });
@@ -449,13 +449,13 @@ void main() {
         ],
       );
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element, isNotEmpty);
-        for (final element in element) {
-          expect(element.op, isNotNull);
-          expect(element.path, isNotNull);
-          if (element.op != PatchOp.remove) {
-            expect(element.value, isNotNull);
+      for (final patchResults in results) {
+        expect(patchResults, isNotEmpty);
+        for (final result in patchResults) {
+          expect(result.op, isNotNull);
+          expect(result.path, isNotNull);
+          if (result.op != PatchOp.remove) {
+            expect(result.value, isNotNull);
           }
         }
       }
@@ -488,13 +488,13 @@ void main() {
         ],
       );
       expect(results, isNotEmpty);
-      for (final element in results) {
-        expect(element, isNotEmpty);
-        for (final element in element) {
-          expect(element.op, isNotNull);
-          expect(element.path, isNotNull);
-          if (element.op != PatchOp.remove) {
-            expect(element.value, isNotNull);
+      for (final patchResults in results) {
+        expect(patchResults, isNotEmpty);
+        for (final result in patchResults) {
+          expect(result.op, isNotNull);
+          expect(result.path, isNotNull);
+          if (result.op != PatchOp.remove) {
+            expect(result.value, isNotNull);
           }
         }
       }
