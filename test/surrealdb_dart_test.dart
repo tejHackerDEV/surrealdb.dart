@@ -56,7 +56,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
     });
@@ -68,7 +68,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signup(
-        SignupAuthentication(ns: 'dummy', db: 'dummy', sc: 'dummy'),
+        SignupStrategy(ns: 'dummy', db: 'dummy', sc: 'dummy'),
       );
     });
   });
@@ -79,7 +79,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
     });
   });
@@ -90,7 +90,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.invalidate();
     });
@@ -102,7 +102,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.let(key: 'name', value: {
         'first': 'tejHacker',
@@ -117,7 +117,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results =
@@ -134,7 +134,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       await db.select('person');
@@ -145,7 +145,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results = await db.select('person:someRandomId');
@@ -169,7 +169,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results = await db.create(thing);
@@ -187,7 +187,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final someStaticId = DateTime.now().millisecondsSinceEpoch;
@@ -205,7 +205,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results = await db.create(thing, data);
@@ -224,7 +224,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final someStaticId = DateTime.now().millisecondsSinceEpoch;
@@ -249,7 +249,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results = await db.update(thing, {});
@@ -269,7 +269,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results = await db.update(recordId!, data);
@@ -290,7 +290,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results = await db.update(thing, data);
@@ -313,7 +313,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results = await db.update(thing, {});
@@ -341,7 +341,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results = await db.merge(thing, dataWithCreatedAt);
@@ -363,7 +363,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results = await db.merge(recordId!, dataWithCreatedAt);
@@ -391,7 +391,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results = await db.merge(thing, complexData);
@@ -413,7 +413,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results = await db.merge(recordId!, complexData);
@@ -436,7 +436,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results = await db.patch(
@@ -468,7 +468,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       final results = await db.patch(
@@ -507,7 +507,7 @@ void main() {
       db.connect();
       await db.wait();
       await db.signIn(
-        SignInAuthentication.credentials(user: user, pass: password),
+        SignInStrategy.credentials(user: user, pass: password),
       );
       await db.use(ns: namespace, db: databaseName);
       await db.delete('person');

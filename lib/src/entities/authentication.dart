@@ -21,8 +21,8 @@ abstract class Authentication {
       };
 }
 
-class SignupAuthentication extends Authentication {
-  SignupAuthentication({
+class SignupStrategy extends Authentication {
+  SignupStrategy({
     required super.ns,
     required super.db,
     required super.sc,
@@ -30,29 +30,29 @@ class SignupAuthentication extends Authentication {
   });
 }
 
-class SignInAuthentication extends Authentication {
+class SignInStrategy extends Authentication {
   final String? user;
   final String? pass;
 
-  SignInAuthentication.credentials({
+  SignInStrategy.credentials({
     required String this.user,
     required String this.pass,
   }) : super(ns: null, db: null, sc: null, extras: null);
 
-  SignInAuthentication.namespace({
+  SignInStrategy.namespace({
     required String this.user,
     required String this.pass,
     required String ns,
   }) : super(ns: ns, db: null, sc: null, extras: null);
 
-  SignInAuthentication.database({
+  SignInStrategy.database({
     required String this.user,
     required String this.pass,
     required String ns,
     required String db,
   }) : super(ns: ns, db: db, sc: null, extras: null);
 
-  SignInAuthentication.scope({
+  SignInStrategy.scope({
     required String ns,
     required String db,
     required String sc,

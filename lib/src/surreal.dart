@@ -188,8 +188,8 @@ class Surreal extends Emitter {
     );
   }
 
-  /// Signup to a specific [authentication] scope.
-  Future<void> signup(SignupAuthentication authentication) async {
+  /// Signs up using the authentication [signupStrategy] applied
+  Future<void> signup(SignupStrategy signupStrategy) async {
     assert(
       _isWebSocketInitialized,
       'This will happen if we forgot to call connect method',
@@ -199,7 +199,7 @@ class Surreal extends Emitter {
       id: id,
       method: RPCMethodNames.kSignup,
       params: [
-        authentication.toJson(),
+        signupStrategy.toJson(),
       ],
     );
     final response = await futureOnce(id);
@@ -211,8 +211,8 @@ class Surreal extends Emitter {
     }
   }
 
-  /// SignIn using the [authentication] strategy applied
-  Future<void> signIn(SignInAuthentication authentication) async {
+  /// SignIn using the authentication [signInStrategy] applied
+  Future<void> signIn(SignInStrategy signInStrategy) async {
     assert(
       _isWebSocketInitialized,
       'This will happen if we forgot to call connect method',
@@ -222,7 +222,7 @@ class Surreal extends Emitter {
       id: id,
       method: RPCMethodNames.kSignIn,
       params: [
-        authentication.toJson(),
+        signInStrategy.toJson(),
       ],
     );
     final response = await futureOnce(id);
