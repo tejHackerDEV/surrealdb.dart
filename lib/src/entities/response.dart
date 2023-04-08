@@ -15,11 +15,18 @@ class Response {
     } else if (resultJson is! Iterable) {
       result = Result.fromJson(resultJson);
     } else {
-      result = resultJson.map((json) {
-        if (json is! Iterable) {
-          return Result.fromJson(json);
+      result = List.generate(resultJson.length, (index) {
+        final innerResultJson = resultJson.elementAt(index);
+        if (innerResultJson is! Iterable) {
+          return Result.fromJson(innerResultJson);
         }
-        return json.map((json) => Result.fromJson(json, isPatchResult: true));
+        return List.generate(
+          innerResultJson.length,
+          (index) => Result.fromJson(
+            innerResultJson.elementAt(index),
+            isPatchResult: true,
+          ),
+        );
       });
     }
     final errorJson = json['error'];

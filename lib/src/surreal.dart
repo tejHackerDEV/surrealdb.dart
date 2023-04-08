@@ -8,6 +8,7 @@ import 'classes/pinger.dart';
 import 'classes/web_socket.dart';
 import 'entities/authentication.dart';
 import 'entities/json_patch.dart';
+import 'entities/response.dart';
 import 'entities/result.dart';
 import 'errors/index.dart';
 import 'utils/constants.dart';
@@ -308,7 +309,7 @@ class Surreal extends Emitter {
   /// [vars] is used to pass any dynamic variables which will be
   /// later on inserted into the [sql] statements automatically
   /// if any matching key found in the [sql] statements
-  Future<Iterable<OkResult>> query(
+  Future<List<OkResult>> query(
     String sql, [
     Map<String, dynamic>? vars,
   ]) async {
@@ -323,32 +324,12 @@ class Surreal extends Emitter {
     );
 
     final response = await futureOnce(id);
-    if (response.error != null) {
-      throw SurrealError(
-        code: response.error!.code,
-        message: response.error!.message,
-      );
-    }
-    final result = response.result;
-    if (result is! Iterable) {
-      if (result is! OkResult) {
-        return Iterable.empty();
-      }
-      return [result];
-    }
-
-    final results = result.map((result) {
-      if (result is! OkResult) {
-        throw SurrealError(code: -1, message: (result as ErrResult).detail);
-      }
-      return result;
-    });
-    return results;
+    return _extractInnerResults<OkResult>(response);
   }
 
   /// Selects all records in a table if [thing] is table name
   /// or a specific record, if [thing] is record id from the database.
-  Future<Iterable<DynamicResult>> select(String thing) async {
+  Future<List<DynamicResult>> select(String thing) async {
     final id = _uuid.v4();
     _send(
       id: id,
@@ -357,26 +338,7 @@ class Surreal extends Emitter {
     );
 
     final response = await futureOnce(id);
-    if (response.error != null) {
-      throw SurrealError(
-        code: response.error!.code,
-        message: response.error!.message,
-      );
-    }
-
-    final result = response.result;
-    if (result is! Iterable) {
-      if (result is! DynamicResult) {
-        return Iterable.empty();
-      }
-      return [result];
-    }
-    return result.map((result) {
-      if (result is! DynamicResult) {
-        throw SurrealError(code: -1, message: (result as ErrResult).detail);
-      }
-      return result;
-    });
+    return _extractInnerResults<DynamicResult>(response);
   }
 
   /// Creates a record in the database with any [data] if provided.
@@ -389,7 +351,7 @@ class Surreal extends Emitter {
   /// If [thing] is a table name along with some id, then the provided
   /// id will be used as the record id for the record ie.,
   /// created in the database.
-  Future<Iterable<DynamicResult>> create(
+  Future<List<DynamicResult>> create(
     String thing, [
     Map<String, dynamic>? data,
   ]) async {
@@ -404,26 +366,7 @@ class Surreal extends Emitter {
     );
 
     final response = await futureOnce(id);
-    if (response.error != null) {
-      throw SurrealError(
-        code: response.error!.code,
-        message: response.error!.message,
-      );
-    }
-
-    final result = response.result;
-    if (result is! Iterable) {
-      if (result is! DynamicResult) {
-        return Iterable.empty();
-      }
-      return [result];
-    }
-    return result.map((result) {
-      if (result is! DynamicResult) {
-        throw SurrealError(code: -1, message: (result as ErrResult).detail);
-      }
-      return result;
-    });
+    return _extractInnerResults<DynamicResult>(response);
   }
 
   /// Update a single or multiple records in the database
@@ -436,7 +379,7 @@ class Surreal extends Emitter {
   /// <br>
   /// If [thing] is a table name along with some id then, only the
   /// matching record with the id will be updated.
-  Future<Iterable<DynamicResult>> update(
+  Future<List<DynamicResult>> update(
     String thing,
     Map<String, dynamic> data,
   ) async {
@@ -451,26 +394,7 @@ class Surreal extends Emitter {
     );
 
     final response = await futureOnce(id);
-    if (response.error != null) {
-      throw SurrealError(
-        code: response.error!.code,
-        message: response.error!.message,
-      );
-    }
-
-    final result = response.result;
-    if (result is! Iterable) {
-      if (result is! DynamicResult) {
-        return Iterable.empty();
-      }
-      return [result];
-    }
-    return result.map((result) {
-      if (result is! DynamicResult) {
-        throw SurrealError(code: -1, message: (result as ErrResult).detail);
-      }
-      return result;
-    });
+    return _extractInnerResults<DynamicResult>(response);
   }
 
   /// Merges  the [data] provided with single or multiple
@@ -483,7 +407,7 @@ class Surreal extends Emitter {
   /// <br>
   /// If [thing] is a table name along with some id then,
   /// then [data] gets merged only with the matching record with the id.
-  Future<Iterable<DynamicResult>> merge(
+  Future<List<DynamicResult>> merge(
     String thing,
     Map<String, dynamic> data,
   ) async {
@@ -502,26 +426,7 @@ class Surreal extends Emitter {
     );
 
     final response = await futureOnce(id);
-    if (response.error != null) {
-      throw SurrealError(
-        code: response.error!.code,
-        message: response.error!.message,
-      );
-    }
-
-    final result = response.result;
-    if (result is! Iterable) {
-      if (result is! DynamicResult) {
-        return Iterable.empty();
-      }
-      return [result];
-    }
-    return result.map((result) {
-      if (result is! DynamicResult) {
-        throw SurrealError(code: -1, message: (result as ErrResult).detail);
-      }
-      return result;
-    });
+    return _extractInnerResults<DynamicResult>(response);
   }
 
   /// Applies [JSON Patch](https://jsonpatch.com/) changes to all records,
@@ -534,7 +439,7 @@ class Surreal extends Emitter {
   /// <br>
   /// If [thing] is a table name along with some id then,
   /// then [patches] gets applied only with the matching record with the id.
-  Future<Iterable<Iterable<PatchResult>>> patch(
+  Future<List<List<PatchResult>>> patch(
     String thing,
     Iterable<JsonPatch> patches,
   ) async {
@@ -552,26 +457,7 @@ class Surreal extends Emitter {
     );
 
     final response = await futureOnce(id);
-    if (response.error != null) {
-      throw SurrealError(
-        code: response.error!.code,
-        message: response.error!.message,
-      );
-    }
-
-    final result = response.result;
-    if (result is! Iterable) {
-      if (result is! Iterable) {
-        return Iterable.empty();
-      }
-      return [result.cast<PatchResult>()];
-    }
-    return result.map((result) {
-      if (result is! Iterable) {
-        throw SurrealError(code: -1, message: (result as ErrResult).detail);
-      }
-      return result.cast<PatchResult>();
-    });
+    return _extractInnerResultsAsList<PatchResult>(response);
   }
 
   /// Deletes all records in a table if [thing] is table name
@@ -579,7 +465,7 @@ class Surreal extends Emitter {
   ///
   /// <br>
   /// Finally returns the deleted records
-  Future<Iterable<DynamicResult>> delete(String thing) async {
+  Future<List<DynamicResult>> delete(String thing) async {
     final id = _uuid.v4();
     _send(
       id: id,
@@ -588,26 +474,7 @@ class Surreal extends Emitter {
     );
 
     final response = await futureOnce(id);
-    if (response.error != null) {
-      throw SurrealError(
-        code: response.error!.code,
-        message: response.error!.message,
-      );
-    }
-
-    final result = response.result;
-    if (result is! Iterable) {
-      if (result is! DynamicResult) {
-        return Iterable.empty();
-      }
-      return [result];
-    }
-    return result.map((result) {
-      if (result is! DynamicResult) {
-        throw SurrealError(code: -1, message: (result as ErrResult).detail);
-      }
-      return result;
-    });
+    return _extractInnerResults<DynamicResult>(response);
   }
 
   /// Sends the data to the websocket by encoding to string
@@ -625,6 +492,68 @@ class Surreal extends Emitter {
       'method': method,
       'params': params,
     }));
+  }
+
+  /// Extracts [List<T>] from [response]'s innerResult,
+  /// if [response]'s innerResult is not type of [List<T>]
+  /// then this will throw an error
+  List<T> _extractInnerResults<T>(Response response) {
+    if (response.error != null) {
+      throw SurrealError(
+        code: response.error!.code,
+        message: response.error!.message,
+      );
+    }
+    final result = response.result;
+    // check whether result is of type list or not
+    if (result is! List) {
+      // if its not then check whether result
+      // itself if the required type we are looking or not
+      // so that we can convert it to a list
+      if (result is! T) {
+        return List.empty();
+      }
+      return [result];
+    }
+
+    return List.generate(result.length, (index) {
+      final innerResult = result.elementAt(index);
+      if (innerResult is! T) {
+        throw SurrealError(
+          code: -1,
+          message: (innerResult as ErrResult).detail,
+        );
+      }
+      return innerResult;
+    });
+  }
+
+  /// Extracts [List<List<T>>] from [response]'s innerResult,
+  /// if [response]'s innerResult is not type of [List<List<T>>]
+  /// then this will throw an error
+  List<List<T>> _extractInnerResultsAsList<T>(Response response) {
+    if (response.error != null) {
+      throw SurrealError(
+        code: response.error!.code,
+        message: response.error!.message,
+      );
+    }
+
+    final result = response.result;
+    // check whether result is of type list or not
+    if (result is! List) {
+      return List.empty();
+    }
+    return List.generate(result.length, (index) {
+      final innerResult = result.elementAt(index);
+      if (innerResult is! List) {
+        throw SurrealError(
+          code: -1,
+          message: (innerResult as ErrResult).detail,
+        );
+      }
+      return innerResult.cast<T>();
+    });
   }
 
   String get url => _url;
