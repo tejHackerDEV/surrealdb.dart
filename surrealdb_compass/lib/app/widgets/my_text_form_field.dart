@@ -5,10 +5,14 @@ import '../constants.dart';
 import '../res/colors.dart';
 
 class MyTextFormField extends StatelessWidget {
+  final TextEditingController? controller;
   final String hintText;
+  final ValueChanged<String>? onChanged;
   const MyTextFormField({
     Key? key,
+    this.controller,
     required this.hintText,
+    this.onChanged,
   }) : super(key: key);
 
   @override
@@ -17,7 +21,9 @@ class MyTextFormField extends StatelessWidget {
       borderSide: BorderSide(color: Colors.transparent),
     );
     return TextFormField(
+      controller: controller,
       style: const TextStyle(color: Colors.textFieldContent),
+      onChanged: onChanged,
       decoration: InputDecoration(
         fillColor: Colors.textFieldBg,
         filled: true,

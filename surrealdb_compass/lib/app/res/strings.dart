@@ -12,4 +12,9 @@ class Strings {
   static const namespaceHint = 'NS: test';
   static const databaseHint = 'DB: test';
   static const connect = 'Connect';
+
+  // DashboardPage
+  static const tables = 'Tables';
+  static const search = 'Search';
+  static const tablesNotFound = 'No tables found';
 }

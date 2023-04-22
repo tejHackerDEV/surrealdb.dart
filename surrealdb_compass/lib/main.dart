@@ -30,8 +30,15 @@ class MyApp extends StatelessWidget {
         textTheme: defaultThemeData.textTheme.apply(
           bodyColor: Colors.textContent,
         ),
+        dividerColor: Colors.divider,
+        iconTheme: defaultThemeData.iconTheme.copyWith(
+          color: Colors.icon,
+        ),
+        listTileTheme: defaultThemeData.listTileTheme.copyWith(
+          iconColor: Colors.icon,
+        ),
       ),
-      home: const SignInPage(),
+      home: const DashboardPage(),
     );
   }
 }

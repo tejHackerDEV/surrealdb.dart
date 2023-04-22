@@ -26,9 +26,17 @@ class Colors {
   static const primaryGradientTwo = Color(0xFF8700FF);
   static const background = Color(0xFF1A202D);
   static const cardBackground = Color(0xFF272E3C);
+  static const divider = Color(0xFF363c4e);
+  static const border = divider;
+  static const navigationBackground = Color(0xFF1D1E25);
 
   static const textTitle = white;
   static const textContent = Color(0xFF989cad);
   static const textFieldContent = Color(0xFF02F36A);
   static const textFieldBg = Color(0xFF1D232D);
+
+  static const icon = textContent;
+
+  static const databaseBackground = Color(0xFF282636);
+  static const listTileSelectedBackground = databaseBackground;
 }
