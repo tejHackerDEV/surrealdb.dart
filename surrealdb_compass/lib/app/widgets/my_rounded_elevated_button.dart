@@ -2,10 +2,15 @@ import 'package:flutter/material.dart' hide Colors;
 
 import '../constants.dart';
 import '../res/colors.dart';
-import '../res/strings.dart';
 
 class MyRoundedElevatedButton extends StatefulWidget {
-  const MyRoundedElevatedButton({Key? key}) : super(key: key);
+  final String text;
+  final EdgeInsets? padding;
+  const MyRoundedElevatedButton(
+    this.text, {
+    Key? key,
+    this.padding,
+  }) : super(key: key);
 
   @override
   State<MyRoundedElevatedButton> createState() =>
@@ -50,17 +55,18 @@ class _MyRoundedElevatedButtonState extends State<MyRoundedElevatedButton> {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 36.0,
-              vertical: 20.0,
-            ),
+            padding: widget.padding ??
+                const EdgeInsets.symmetric(
+                  horizontal: 36.0,
+                  vertical: 20.0,
+                ),
             shape: RoundedRectangleBorder(
               borderRadius: borderRadius,
             ),
           ),
-          child: const Text(
-            Strings.connect,
-            style: TextStyle(
+          child: Text(
+            widget.text,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16.0,
               fontWeight: FontWeight.w600,

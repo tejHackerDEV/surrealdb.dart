@@ -3,8 +3,11 @@ import 'package:flutter/scheduler.dart';
 
 import '../constants.dart';
 import '../res/colors.dart';
+import '../res/strings.dart';
 import '../widgets/my_icon_button.dart';
 import '../widgets/my_list_view.dart';
+import '../widgets/my_rounded_elevated_button.dart';
+import '../widgets/my_text_form_field.dart';
 import 'widgets/record.dart';
 import 'widgets/side_navigation_bar.dart';
 
@@ -116,13 +119,43 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ),
                       Expanded(
-                        child: MyListView(
+                        child: Container(
                           padding: const EdgeInsets.all(16.0),
-                          itemCount: 20,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 8.0),
-                          itemBuilder: (_, __) => Record(
-                            json: json,
+                          color: Colors.navigationBackground,
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: MyTextFormField(
+                                      hintText: Strings.where,
+                                      maxLines: 10,
+                                      onChanged: (value) {},
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16.0),
+                                  const MyRoundedElevatedButton(
+                                    Strings.select,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 28.0,
+                                      vertical: 16.0,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16.0),
+                              Expanded(
+                                child: MyListView(
+                                  itemCount: 20,
+                                  separatorBuilder: (_, __) => const SizedBox(
+                                    height: 8.0,
+                                  ),
+                                  itemBuilder: (_, __) => Record(
+                                    json: json,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

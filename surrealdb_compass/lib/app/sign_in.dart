@@ -90,7 +90,7 @@ class _SignInPageState extends State<SignInPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: const [
-                      MyRoundedElevatedButton(),
+                      MyRoundedElevatedButton(Strings.connect),
                     ],
                   ),
                 ],

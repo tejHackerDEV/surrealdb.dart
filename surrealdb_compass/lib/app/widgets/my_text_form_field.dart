@@ -8,11 +8,13 @@ class MyTextFormField extends StatelessWidget {
   final TextEditingController? controller;
   final String hintText;
   final ValueChanged<String>? onChanged;
+  final int maxLines;
   const MyTextFormField({
     Key? key,
     this.controller,
     required this.hintText,
     this.onChanged,
+    this.maxLines = 1,
   }) : super(key: key);
 
   @override
@@ -24,6 +26,11 @@ class MyTextFormField extends StatelessWidget {
       controller: controller,
       style: const TextStyle(color: Colors.textFieldContent),
       onChanged: onChanged,
+      // https://github.com/flutter/flutter/issues/116707#issuecomment-1344060320
+      textInputAction:
+          maxLines > 1 ? TextInputAction.none : TextInputAction.done,
+      minLines: 1,
+      maxLines: maxLines,
       decoration: InputDecoration(
         fillColor: Colors.textFieldBg,
         filled: true,
