@@ -9,4 +9,6 @@ class Constants {
       Colors.primaryGradientTwo,
     ],
   );
+
+  static const kTopNavigationBarHeight = 55.0;
 }

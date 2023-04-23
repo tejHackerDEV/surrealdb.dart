@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide Colors;
 
+import '../../constants.dart';
 import '../../res/assets.dart';
 import '../../res/colors.dart';
 import '../../res/strings.dart';
@@ -8,7 +9,11 @@ import '../../widgets/my_list_view.dart';
 import '../../widgets/my_text_form_field.dart';
 
 class SideNavigationBar extends StatefulWidget {
-  const SideNavigationBar({Key? key}) : super(key: key);
+  final ValueChanged<String> onTableSelected;
+  const SideNavigationBar({
+    Key? key,
+    required this.onTableSelected,
+  }) : super(key: key);
 
   @override
   State<SideNavigationBar> createState() => _SideNavigationBarState();
@@ -39,6 +44,7 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
       child: Column(
         children: [
           Container(
+            height: Constants.kTopNavigationBarHeight,
             padding: padding,
             decoration: const BoxDecoration(
               color: Colors.databaseBackground,
@@ -110,7 +116,8 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
                           final tableName = filteredTableNames.elementAt(index);
                           return MyListTile(
                             onTap: () => setState(() {
-                              selectedTableName = tableName;
+                              widget.onTableSelected(
+                                  selectedTableName = tableName);
                             }),
                             isSelected: tableName == selectedTableName,
                             leading: Icons.grid_on_outlined,
