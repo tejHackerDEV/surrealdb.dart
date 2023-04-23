@@ -4,6 +4,8 @@ import 'package:flutter/scheduler.dart';
 import '../constants.dart';
 import '../res/colors.dart';
 import '../widgets/my_icon_button.dart';
+import '../widgets/my_list_view.dart';
+import 'widgets/record.dart';
 import 'widgets/side_navigation_bar.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -18,6 +20,25 @@ class _DashboardPageState extends State<DashboardPage> {
   List<String> tableNames = [];
   int? selectedIndex;
   int? hoveredIndex;
+
+  final json = <String, dynamic>{
+    "_id": {"oid": "6444f98bf54d42670bc693dc"},
+    "name": "Hey",
+    "array": [1, 2, 3],
+    "nestedArray": [
+      1,
+      2,
+      3,
+      {
+        "name": "Hey",
+        "array": [1, 2, 3]
+      }
+    ],
+    "nested": {
+      "name": "Hey",
+      "array": [1, 2, 3]
+    }
+  };
 
   @override
   void dispose() {
@@ -82,8 +103,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                     scrollController.animateTo(
                                       scrollController.position.maxScrollExtent,
                                       curve: Curves.easeOut,
-                                      duration:
-                                          const Duration(milliseconds: 500),
+                                      duration: const Duration(
+                                        milliseconds: 500,
+                                      ),
                                     );
                                   });
                                 }),
@@ -91,6 +113,17 @@ class _DashboardPageState extends State<DashboardPage> {
                               ),
                             ),
                           ],
+                        ),
+                      ),
+                      Expanded(
+                        child: MyListView(
+                          padding: const EdgeInsets.all(16.0),
+                          itemCount: 20,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 8.0),
+                          itemBuilder: (_, __) => Record(
+                            json: json,
+                          ),
                         ),
                       ),
                     ],

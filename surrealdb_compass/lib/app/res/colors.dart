@@ -20,6 +20,7 @@ class Colors {
 
   static const white = Color(0xFFFFFFFF);
   static const black = Color(0xFF000000);
+  static const green = Color(0xFF02F36A);
   static const transparent = Color(0x00000000);
 
   static const primaryGradientOne = Color(0xFFFF009E);
@@ -32,11 +33,14 @@ class Colors {
 
   static const textTitle = white;
   static const textContent = Color(0xFF989cad);
-  static const textFieldContent = Color(0xFF02F36A);
+  static const textFieldContent = green;
   static const textFieldBg = Color(0xFF1D232D);
 
   static const icon = textContent;
 
   static const databaseBackground = Color(0xFF282636);
   static const listTileSelectedBackground = databaseBackground;
+
+  static const recordValue = Color(0xFFAE81ff);
+  static const recordStringValue = green;
 }
