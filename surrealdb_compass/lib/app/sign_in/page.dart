@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart' hide Colors;
+import 'package:go_router/go_router.dart';
 
-import 'res/colors.dart';
-import 'res/strings.dart';
-import 'widgets/my_rounded_elevated_button.dart';
-import 'widgets/my_text_form_field.dart';
-import 'widgets/surreal_db_text.dart';
+import '../res/colors.dart';
+import '../res/strings.dart';
+import '../router/route_names.dart';
+import '../widgets/my_rounded_elevated_button.dart';
+import '../widgets/my_text_form_field.dart';
+import '../widgets/surreal_db_text.dart';
+import 'view_model.dart';
 
-class SignInPage extends StatefulWidget {
-  const SignInPage({Key? key}) : super(key: key);
+class SignInPage extends StatelessWidget {
+  final SignInPageViewModel _viewModel;
+  const SignInPage(
+    this._viewModel, {
+    Key? key,
+  }) : super(key: key);
 
-  @override
-  State<SignInPage> createState() => _SignInPageState();
-}
-
-class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     final mediaQueryData = MediaQuery.of(context);
@@ -51,20 +53,23 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                   ),
                   const SizedBox(height: 12.0),
-                  const MyTextFormField(
+                  MyTextFormField(
+                    controller: _viewModel.connectionUriTextEditingController,
                     hintText: Strings.connectionUriHint,
                   ),
                   const SizedBox(height: 8.0),
                   Row(
-                    children: const [
+                    children: [
                       Expanded(
                         child: MyTextFormField(
+                          controller: _viewModel.userTextEditingController,
                           hintText: Strings.userHint,
                         ),
                       ),
-                      SizedBox(width: 8.0),
+                      const SizedBox(width: 8.0),
                       Expanded(
                         child: MyTextFormField(
+                          controller: _viewModel.passTextEditingController,
                           hintText: Strings.passwordHint,
                         ),
                       ),
@@ -72,26 +77,42 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                   const SizedBox(height: 8.0),
                   Row(
-                    children: const [
+                    children: [
                       Expanded(
                         child: MyTextFormField(
+                          controller: _viewModel.nsTextEditingController,
                           hintText: Strings.namespaceHint,
                         ),
                       ),
-                      SizedBox(width: 8.0),
+                      const SizedBox(width: 8.0),
                       Expanded(
                         child: MyTextFormField(
+                          controller: _viewModel.dbTextEditingController,
                           hintText: Strings.databaseHint,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: const [
-                      MyRoundedElevatedButton(Strings.connect),
-                    ],
+                  ValueListenableBuilder(
+                    valueListenable: _viewModel.isSigningIn,
+                    builder: (_, value, child) {
+                      if (value) return const SizedBox.shrink();
+                      return child!;
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        MyRoundedElevatedButton(
+                          Strings.connect,
+                          onTap: () => _viewModel.signIn().then(
+                                (_) => context.goNamed(
+                                  AppRouteNames.dashboard,
+                                ),
+                              ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

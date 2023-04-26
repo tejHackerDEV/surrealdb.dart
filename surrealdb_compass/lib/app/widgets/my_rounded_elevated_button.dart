@@ -6,10 +6,12 @@ import '../res/colors.dart';
 class MyRoundedElevatedButton extends StatefulWidget {
   final String text;
   final EdgeInsets? padding;
+  final VoidCallback onTap;
   const MyRoundedElevatedButton(
     this.text, {
     Key? key,
     this.padding,
+    required this.onTap,
   }) : super(key: key);
 
   @override
@@ -46,7 +48,7 @@ class _MyRoundedElevatedButtonState extends State<MyRoundedElevatedButton> {
                 ],
         ),
         child: ElevatedButton(
-          onPressed: () {},
+          onPressed: widget.onTap,
           onHover: (value) {
             setState(() {
               isInHoverState = value;

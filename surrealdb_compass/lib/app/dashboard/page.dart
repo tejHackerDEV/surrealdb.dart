@@ -134,12 +134,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                     ),
                                   ),
                                   const SizedBox(width: 16.0),
-                                  const MyRoundedElevatedButton(
+                                  MyRoundedElevatedButton(
                                     Strings.select,
-                                    padding: EdgeInsets.symmetric(
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: 28.0,
                                       vertical: 16.0,
                                     ),
+                                    onTap: () {},
                                   ),
                                 ],
                               ),

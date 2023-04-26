@@ -1,19 +1,28 @@
 import 'package:flutter/material.dart' hide Colors;
+import 'package:get_it/get_it.dart';
+import 'package:surrealdb_compass/app/router/index.dart';
 
 import 'app/res/colors.dart';
-import 'app/sign_in.dart';
+import 'data/repository.dart';
 
 void main() {
+  GetIt.instance.registerSingleton(Repository());
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final appRouter = AppRouter();
+  @override
   Widget build(BuildContext context) {
     final defaultThemeData = Theme.of(context);
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'SurrealDB Compass',
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.background,
@@ -38,7 +47,7 @@ class MyApp extends StatelessWidget {
           iconColor: Colors.icon,
         ),
       ),
-      home: const DashboardPage(),
+      routerConfig: appRouter.config,
     );
   }
 }
