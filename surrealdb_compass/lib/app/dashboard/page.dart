@@ -8,21 +8,30 @@ import '../widgets/my_icon_button.dart';
 import '../widgets/my_list_view.dart';
 import '../widgets/my_rounded_elevated_button.dart';
 import '../widgets/my_text_form_field.dart';
+import 'view_model.dart';
 import 'widgets/record.dart';
 import 'widgets/side_navigation_bar.dart';
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({Key? key}) : super(key: key);
+  final DashboardPageViewModel _viewModel;
+  const DashboardPage(
+    this._viewModel, {
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  final scrollController = ScrollController();
-  List<String> tableNames = [];
-  int? selectedIndex;
-  int? hoveredIndex;
+  late final DashboardPageViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = widget._viewModel;
+    _viewModel.getTables();
+  }
 
   final json = <String, dynamic>{
     "_id": {"oid": "6444f98bf54d42670bc693dc"},
@@ -44,126 +53,134 @@ class _DashboardPageState extends State<DashboardPage> {
   };
 
   @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
-        children: [
-          Expanded(
-            child: SideNavigationBar(
-              onTableSelected: (tableName) => setState(() {
-                // insert/updated the tableName at the selectedIndex
-                if (selectedIndex == null) {
-                  tableNames.add(tableName);
-                  selectedIndex = 0;
-                  return;
-                }
-                tableNames[selectedIndex!] = tableName;
-              }),
+      body: ValueListenableBuilder(
+        valueListenable: _viewModel.isFetching,
+        builder: (_, value, child) {
+          if (value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return child!;
+        },
+        child: Row(
+          children: [
+            Expanded(
+              child: SideNavigationBar(
+                tables: _viewModel.tables,
+                onTableSelected: _viewModel.addOpenedTable,
+              ),
             ),
-          ),
-          Expanded(
-            flex: 4,
-            child: tableNames.isEmpty
-                ? Container()
-                : Column(
-                    children: [
-                      Container(
-                        height: Constants.kTopNavigationBarHeight,
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(color: Colors.border),
-                          ),
-                        ),
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          controller: scrollController,
-                          children: [
-                            ...List.generate(tableNames.length, (index) {
-                              return _buildTable(
-                                index: index,
-                                tableName: tableNames.elementAt(index),
-                                isHovered: hoveredIndex == index,
-                                isSelected: selectedIndex == index,
-                              );
-                            }),
-                            const SizedBox(width: 12.0),
-                            Align(
-                              alignment: const Alignment(0, -0.1),
-                              child: MyIconButton(
-                                onTap: () => setState(() {
-                                  tableNames.add(
-                                    tableNames.elementAt(selectedIndex!),
-                                  );
-                                  selectedIndex = tableNames.length - 1;
-                                  SchedulerBinding.instance
-                                      .addPostFrameCallback((timeStamp) {
-                                    scrollController.animateTo(
-                                      scrollController.position.maxScrollExtent,
-                                      curve: Curves.easeOut,
-                                      duration: const Duration(
-                                        milliseconds: 500,
-                                      ),
-                                    );
-                                  });
-                                }),
-                                icon: Icons.add_outlined,
-                              ),
+            Expanded(
+              flex: 4,
+              child: ValueListenableBuilder(
+                  valueListenable: _viewModel.openedTables,
+                  builder: (_, openedTables, __) {
+                    if (openedTables.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    return Column(
+                      children: [
+                        Container(
+                          height: Constants.kTopNavigationBarHeight,
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.border),
                             ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(16.0),
-                          color: Colors.navigationBackground,
-                          child: Column(
+                          ),
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            controller: _viewModel.scrollController,
                             children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: MyTextFormField(
-                                      hintText: Strings.where,
-                                      maxLines: 10,
-                                      onChanged: (value) {},
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16.0),
-                                  MyRoundedElevatedButton(
-                                    Strings.select,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 28.0,
-                                      vertical: 16.0,
-                                    ),
-                                    onTap: () {},
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16.0),
-                              Expanded(
-                                child: MyListView(
-                                  itemCount: 20,
-                                  separatorBuilder: (_, __) => const SizedBox(
-                                    height: 8.0,
-                                  ),
-                                  itemBuilder: (_, __) => Record(
-                                    json: json,
-                                  ),
+                              ...List.generate(openedTables.length, (index) {
+                                return _buildTable(
+                                  index: index,
+                                  tableName: openedTables.elementAt(index).name,
+                                  isHovered: _viewModel
+                                          .currentHoveredOpenedTableIndex ==
+                                      index,
+                                  isSelected:
+                                      _viewModel.currentOpenedTableIndex ==
+                                          index,
+                                );
+                              }),
+                              const SizedBox(width: 12.0),
+                              Align(
+                                alignment: const Alignment(0, -0.1),
+                                child: MyIconButton(
+                                  onTap: () {
+                                    _viewModel.addOpenedTable(
+                                      openedTables.elementAt(
+                                        _viewModel.currentOpenedTableIndex!,
+                                      ),
+                                      duplicate: true,
+                                    );
+                                    SchedulerBinding.instance
+                                        .addPostFrameCallback((timeStamp) {
+                                      _viewModel.scrollController.animateTo(
+                                        _viewModel.scrollController.position
+                                            .maxScrollExtent,
+                                        curve: Curves.easeOut,
+                                        duration: const Duration(
+                                          milliseconds: 500,
+                                        ),
+                                      );
+                                    });
+                                  },
+                                  icon: Icons.add_outlined,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-          ),
-        ],
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(16.0),
+                            color: Colors.navigationBackground,
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: MyTextFormField(
+                                        hintText: Strings.where,
+                                        maxLines: 10,
+                                        onChanged: (value) {},
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16.0),
+                                    MyRoundedElevatedButton(
+                                      Strings.select,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 28.0,
+                                        vertical: 16.0,
+                                      ),
+                                      onTap: () {},
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16.0),
+                                Expanded(
+                                  child: MyListView(
+                                    itemCount: 20,
+                                    separatorBuilder: (_, __) => const SizedBox(
+                                      height: 8.0,
+                                    ),
+                                    itemBuilder: (_, __) => Record(
+                                      json: json,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -196,16 +213,9 @@ class _DashboardPageState extends State<DashboardPage> {
       textColor = Colors.white;
     }
     return InkWell(
-      onTap: () => setState(() {
-        selectedIndex = index;
-      }),
-      onHover: (value) => setState(() {
-        if (!value) {
-          hoveredIndex = null;
-          return;
-        }
-        hoveredIndex = index;
-      }),
+      onTap: () => _viewModel.setCurrentOpenedTableIndex(index),
+      onHover: (value) =>
+          _viewModel.setCurrentHoveredOpenedTableIndex(value, index),
       child: Container(
         width: 175.0,
         padding: const EdgeInsets.symmetric(
@@ -245,27 +255,7 @@ class _DashboardPageState extends State<DashboardPage> {
             Opacity(
               opacity: closeIconOpacity,
               child: MyIconButton(
-                onTap: () => setState(() {
-                  tableNames.removeAt(index);
-                  // if tableNames are empty then
-                  // don't select anything
-                  if (tableNames.isEmpty) {
-                    selectedIndex = null;
-                    return;
-                  }
-                  // if the removed tableName index is less than
-                  // the selectedIndex or selectedIndex & tableName index
-                  // were lastIndex of then we need to decrease
-                  // 1 from the selectedIndex.
-                  if ((index < selectedIndex!) ||
-                      (tableNames.length == index && index == selectedIndex)) {
-                    selectedIndex = selectedIndex! - 1;
-                  }
-                  if (selectedIndex?.isNegative == true) {
-                    selectedIndex = null;
-                    return;
-                  }
-                }),
+                onTap: () => _viewModel.removeOpenedTableAt(index),
                 icon: Icons.close_outlined,
               ),
             ),

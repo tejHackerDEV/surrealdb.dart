@@ -18,4 +18,14 @@ class Repository {
     await _db.use(ns: ns, db: db);
     _isInitialized = true;
   }
+
+  Future<List<OkResult>> query(
+    String sql, [
+    Map<String, dynamic>? vars,
+  ]) {
+    if (!_isInitialized) {
+      throw AssertionError('DB is not initialized to perform this action');
+    }
+    return _db.query(sql, vars);
+  }
 }

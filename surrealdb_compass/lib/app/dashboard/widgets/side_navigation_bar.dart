@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart' hide Colors;
+import 'package:flutter/material.dart' hide Colors, Table;
 
+import '../../../domain/entities/info/helpers/table.dart';
 import '../../constants.dart';
 import '../../res/assets.dart';
 import '../../res/colors.dart';
@@ -9,9 +10,11 @@ import '../../widgets/my_list_view.dart';
 import '../../widgets/my_text_form_field.dart';
 
 class SideNavigationBar extends StatefulWidget {
-  final ValueChanged<String> onTableSelected;
+  final Iterable<Table> tables;
+  final ValueChanged<Table> onTableSelected;
   const SideNavigationBar({
     Key? key,
+    required this.tables,
     required this.onTableSelected,
   }) : super(key: key);
 
@@ -20,13 +23,16 @@ class SideNavigationBar extends StatefulWidget {
 }
 
 class _SideNavigationBarState extends State<SideNavigationBar> {
-  final tableNames = [
-    'user',
-    'profile',
-    'token',
-  ];
-  late Iterable<String> filteredTableNames = tableNames;
-  String? selectedTableName;
+  late Iterable<Table> tables;
+  late Iterable<Table> filteredTables;
+  Table? selectedTable;
+
+  @override
+  void initState() {
+    super.initState();
+    tables = widget.tables;
+    filteredTables = tables;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,11 +100,11 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
                       onChanged: (value) {
                         setState(() {
                           if (value.isEmpty) {
-                            filteredTableNames = tableNames;
+                            filteredTables = tables;
                             return;
                           }
-                          filteredTableNames = tableNames.where(
-                            (tableName) => tableName.contains(value),
+                          filteredTables = tables.where(
+                            (table) => table.name.contains(value),
                           );
                         });
                       },
@@ -107,21 +113,20 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
                     Expanded(
                       child: MyListView(
                         padding: const EdgeInsets.all(4.0),
-                        itemCount: filteredTableNames.length,
+                        itemCount: filteredTables.length,
                         emptyBuilder: (_) => const Text(Strings.tablesNotFound),
                         separatorBuilder: (_, __) => const SizedBox(
                           height: 8.0,
                         ),
                         itemBuilder: (_, index) {
-                          final tableName = filteredTableNames.elementAt(index);
+                          final table = filteredTables.elementAt(index);
                           return MyListTile(
                             onTap: () => setState(() {
-                              widget.onTableSelected(
-                                  selectedTableName = tableName);
+                              widget.onTableSelected(selectedTable = table);
                             }),
-                            isSelected: tableName == selectedTableName,
+                            isSelected: table == selectedTable,
                             leading: Icons.grid_on_outlined,
-                            title: tableName,
+                            title: table.name,
                           );
                         },
                       ),
