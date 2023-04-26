@@ -84,7 +84,11 @@ class Surreal extends Emitter {
   }
 
   /// Connects to a local or remote database endpoint.
-  void connect() {
+  ///
+  /// <br>
+  /// [timeout] is used to specify after how much amount of time
+  /// the underlying socket should throw an error upon unsuccessful connection
+  void connect({Duration? timeout}) {
     if (_isWebSocketInitialized) {
       return;
     }
@@ -94,7 +98,7 @@ class Surreal extends Emitter {
     // Next we setup the websocket connection
     // and listen for events on the socket,
     // specifying whether logging is enabled.
-    _webSocket = WebSocket(url);
+    _webSocket = WebSocket(url, timeout: timeout);
 
     // When the connection is opened we
     // need to attempt authentication if

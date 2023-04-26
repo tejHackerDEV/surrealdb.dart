@@ -15,20 +15,31 @@ enum ConnectionStatus {
 class WebSocket extends Emitter {
   final Uri _uri;
 
-  WebSocket._internal(this._uri) {
+  /// Used to track whether socket connection is established or not
+  /// after an error occurred. If the connection is not re-established
+  /// even after [_connectionTimeout] then this will throw
+  /// the error which invoked this tracker to get triggered
+  Timer? _connectionTracker;
+  final Duration _connectionTimeout;
+
+  WebSocket._internal(this._uri, this._connectionTimeout) {
     _init();
   }
 
-  factory WebSocket(String url) {
+  factory WebSocket(
+    String url, {
+    Duration? timeout,
+  }) {
     return WebSocket._internal(
       Uri.parse(
         url.replaceFirst('http://', 'ws://').replaceFirst('https://', 'wss://'),
       ),
+      timeout ?? Duration(minutes: 1),
     );
   }
 
-  late final WebSocketChannel _webSocketChannel;
-  late final Completer<void> _readyCompleter;
+  late WebSocketChannel _webSocketChannel;
+  late Completer<void> _readyCompleter;
 
   /// Holds the current connection status of the websocket
   ConnectionStatus _connectionStatus = ConnectionStatus.closed;
@@ -54,6 +65,15 @@ class WebSocket extends Emitter {
       final response = Response.fromJson(jsonDecode(message));
       emit(EventNames.message, response);
     }, onError: (error) {
+      if (error is WebSocketChannelException) {
+        if (_connectionTracker?.isActive != true) {
+          _connectionTracker = Timer(_connectionTimeout, () {
+            forceClose();
+            throw error;
+          });
+        }
+        return;
+      }
       final response = Response.fromJson(jsonDecode(error));
       emit(EventNames.error, response);
     }, onDone: () {
@@ -73,6 +93,9 @@ class WebSocket extends Emitter {
           _timer?.cancel();
           open();
         });
+      } else {
+        // Stop the tracker as the connection is force-closed
+        _connectionTracker?.cancel();
       }
 
       // When the WebSocket is closed
@@ -83,6 +106,9 @@ class WebSocket extends Emitter {
 
     _webSocketChannel.ready.then((_) {
       emit(EventNames.open, null);
+      // Stop the tracker as the connection is established
+      _connectionTracker?.cancel();
+
       // When the WebSocket is opened
       // then we need to store the connection
       // status within the status property.
