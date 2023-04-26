@@ -46,15 +46,16 @@ class Result {
 
 class OkResult extends Result {
   final String time;
-  final List<dynamic> result;
+  final Iterable<dynamic> result;
 
   OkResult._internal(super.status, this.time, this.result);
 
   factory OkResult.fromJson(Map<String, dynamic> json) {
+    final result = json['result'];
     return OkResult._internal(
       ResultStatus.ok,
       json['time'],
-      json['result'],
+      result is! Iterable ? [result] : result,
     );
   }
 
