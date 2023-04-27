@@ -3,14 +3,10 @@ import 'package:flutter/scheduler.dart';
 
 import '../constants.dart';
 import '../res/colors.dart';
-import '../res/strings.dart';
 import '../widgets/my_icon_button.dart';
-import '../widgets/my_list_view.dart';
-import '../widgets/my_rounded_elevated_button.dart';
-import '../widgets/my_text_form_field.dart';
 import 'view_model.dart';
-import 'widgets/record.dart';
 import 'widgets/side_navigation_bar.dart';
+import 'widgets/table_explorer.dart';
 
 class DashboardPage extends StatefulWidget {
   final DashboardPageViewModel _viewModel;
@@ -32,25 +28,6 @@ class _DashboardPageState extends State<DashboardPage> {
     _viewModel = widget._viewModel;
     _viewModel.getTables();
   }
-
-  final json = <String, dynamic>{
-    "_id": {"oid": "6444f98bf54d42670bc693dc"},
-    "name": "Hey",
-    "array": [1, 2, 3],
-    "nestedArray": [
-      1,
-      2,
-      3,
-      {
-        "name": "Hey",
-        "array": [1, 2, 3]
-      }
-    ],
-    "nested": {
-      "name": "Hey",
-      "array": [1, 2, 3]
-    }
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -138,41 +115,17 @@ class _DashboardPageState extends State<DashboardPage> {
                           child: Container(
                             padding: const EdgeInsets.all(16.0),
                             color: Colors.navigationBackground,
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: MyTextFormField(
-                                        hintText: Strings.where,
-                                        maxLines: 10,
-                                        onChanged: (value) {},
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16.0),
-                                    MyRoundedElevatedButton(
-                                      Strings.select,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 28.0,
-                                        vertical: 16.0,
-                                      ),
-                                      onTap: () {},
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16.0),
-                                Expanded(
-                                  child: MyListView(
-                                    itemCount: 20,
-                                    separatorBuilder: (_, __) => const SizedBox(
-                                      height: 8.0,
-                                    ),
-                                    itemBuilder: (_, __) => Record(
-                                      json: json,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            child: IndexedStack(
+                              index: _viewModel.currentOpenedTableIndex,
+                              children:
+                                  List.generate(openedTables.length, (index) {
+                                final openedTable =
+                                    openedTables.elementAt(index);
+                                return TableExplorer(
+                                  tableName: openedTable.name,
+                                  getRecordsFuture: _viewModel.getTableRecords,
+                                );
+                              }),
                             ),
                           ),
                         ),

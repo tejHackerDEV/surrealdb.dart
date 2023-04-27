@@ -2,11 +2,16 @@ import 'package:flutter/widgets.dart' hide Table;
 
 import '../../domain/entities/info/helpers/table.dart';
 import '../../use_cases/get_db_info.dart';
+import '../../use_cases/get_table_records.dart';
 import '../view_model.dart';
 
 class DashboardPageViewModel extends ViewModel {
   final GetDBInfoUseCase _getDBInfoUseCase;
-  DashboardPageViewModel(this._getDBInfoUseCase);
+  final GetTableRecordsUseCase _getTableRecordsUseCase;
+  DashboardPageViewModel(
+    this._getDBInfoUseCase,
+    this._getTableRecordsUseCase,
+  );
 
   final scrollController = ScrollController();
 
@@ -33,6 +38,10 @@ class DashboardPageViewModel extends ViewModel {
         ),
       ));
     }).whenComplete(() => _isFetching.value = false);
+  }
+
+  Future<Iterable<Map<String, dynamic>>> getTableRecords(String tableName) {
+    return _getTableRecordsUseCase.call(tableName);
   }
 
   void removeOpenedTableAt(int index) {
