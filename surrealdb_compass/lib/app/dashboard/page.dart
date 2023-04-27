@@ -69,6 +69,7 @@ class _DashboardPageState extends State<DashboardPage> {
               child: SideNavigationBar(
                 tables: _viewModel.tables,
                 onTableSelected: _viewModel.addOpenedTable,
+                onTablesRefresh: _viewModel.getTables,
               ),
             ),
             Expanded(

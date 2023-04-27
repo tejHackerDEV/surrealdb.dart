@@ -12,10 +12,12 @@ import '../../widgets/my_text_form_field.dart';
 class SideNavigationBar extends StatefulWidget {
   final Iterable<Table> tables;
   final ValueChanged<Table> onTableSelected;
+  final VoidCallback onTablesRefresh;
   const SideNavigationBar({
     Key? key,
     required this.tables,
     required this.onTableSelected,
+    required this.onTablesRefresh,
   }) : super(key: key);
 
   @override
@@ -89,10 +91,13 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
                 padding: padding,
                 child: Column(
                   children: [
-                    const ListTile(
-                      leading: Icon(Icons.table_chart_outlined),
-                      title: Text(Strings.tables),
-                      trailing: Icon(Icons.refresh_outlined),
+                    ListTile(
+                      leading: const Icon(Icons.table_chart_outlined),
+                      title: const Text(Strings.tables),
+                      trailing: InkWell(
+                        onTap: widget.onTablesRefresh,
+                        child: const Icon(Icons.refresh_outlined),
+                      ),
                     ),
                     const SizedBox(height: 16.0),
                     MyTextFormField(
