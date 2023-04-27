@@ -17,8 +17,8 @@ class DashboardPageViewModel extends ViewModel {
 
   final _isFetching = ValueNotifier(false);
   final _tables = <Table>[];
-  int? _currentOpenedTableIndex;
-  int? _currentHoveredOpenedTableIndex;
+  final currentOpenedTableIndex = ValueNotifier<int?>(null);
+  final currentHoveredOpenedTableIndex = ValueNotifier<int?>(null);
   final openedTables = ValueNotifier(<Table>[]);
 
   @override
@@ -45,76 +45,71 @@ class DashboardPageViewModel extends ViewModel {
   }
 
   void removeOpenedTableAt(int index) {
-    call() {
-      final tables = openedTables.value;
-      tables.removeAt(index);
+    List<Table> call() {
+      final openedTables = this.openedTables.value;
+      openedTables.removeAt(index);
       // if tableNames are empty then
       // don't select anything
-      if (tables.isEmpty) {
-        _currentOpenedTableIndex = null;
-        return;
+      if (openedTables.isEmpty) {
+        currentOpenedTableIndex.value = null;
+        return openedTables;
       }
       // if the removed tableName index is less than
       // the selectedIndex or selectedIndex & tableName index
       // were lastIndex of then we need to decrease
       // 1 from the selectedIndex.
-      if ((index < _currentOpenedTableIndex!) ||
-          (tables.length == index && index == _currentOpenedTableIndex)) {
-        _currentOpenedTableIndex = _currentOpenedTableIndex! - 1;
+      if ((index < currentOpenedTableIndex.value!) ||
+          (openedTables.length == index &&
+              index == currentOpenedTableIndex.value)) {
+        currentOpenedTableIndex.value = currentOpenedTableIndex.value! - 1;
       }
-      if (_currentOpenedTableIndex?.isNegative == true) {
-        _currentOpenedTableIndex = null;
-        return;
+      if (currentOpenedTableIndex.value?.isNegative == true) {
+        currentOpenedTableIndex.value = null;
+        return openedTables;
       }
+      return openedTables;
     }
 
-    call();
-    openedTables.notifyListeners();
+    openedTables.value = [...call()];
   }
 
   void addOpenedTable(
     Table table, {
     bool duplicate = false,
   }) {
-    call() {
+    List<Table> call() {
+      final openedTables = this.openedTables.value;
       // insert/updated the tableName at the selectedIndex
-      final tables = openedTables.value;
-      if (_currentOpenedTableIndex == null) {
-        tables.add(table);
-        _currentOpenedTableIndex = 0;
-        return;
+      if (currentOpenedTableIndex.value == null) {
+        openedTables.add(table);
+        currentOpenedTableIndex.value = 0;
+        return openedTables;
       }
       if (!duplicate) {
-        tables[_currentOpenedTableIndex!] = table;
-        return;
+        openedTables[currentOpenedTableIndex.value!] = table;
+        return openedTables;
       }
-      tables.add(table);
-      _currentOpenedTableIndex = tables.length - 1;
+      openedTables.add(table);
+      currentOpenedTableIndex.value = openedTables.length - 1;
+      return openedTables;
     }
 
-    call();
-    openedTables.notifyListeners();
+    openedTables.value = [...call()];
   }
 
   void setCurrentOpenedTableIndex(int? index) {
-    _currentOpenedTableIndex = index;
-    openedTables.notifyListeners();
+    currentOpenedTableIndex.value = index;
   }
 
   void setCurrentHoveredOpenedTableIndex(bool isHovered, int index) {
     if (!isHovered) {
-      _currentHoveredOpenedTableIndex = null;
+      currentHoveredOpenedTableIndex.value = null;
       return;
     }
-    _currentHoveredOpenedTableIndex = index;
-    openedTables.notifyListeners();
+    currentHoveredOpenedTableIndex.value = index;
   }
 
   ValueNotifier<bool> get isFetching => _isFetching;
 
   Iterable<Table> get tables => _tables;
-
-  int? get currentOpenedTableIndex => _currentOpenedTableIndex;
-
-  int? get currentHoveredOpenedTableIndex => _currentHoveredOpenedTableIndex;
 }

@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart' hide Colors;
+import 'package:flutter/material.dart' hide Colors, Table;
 import 'package:flutter/scheduler.dart';
 
+import '../../domain/entities/info/helpers/table.dart';
 import '../constants.dart';
 import '../res/colors.dart';
 import '../widgets/my_icon_button.dart';
@@ -59,73 +60,46 @@ class _DashboardPageState extends State<DashboardPage> {
                     }
                     return Column(
                       children: [
-                        Container(
-                          height: Constants.kTopNavigationBarHeight,
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(color: Colors.border),
-                            ),
-                          ),
-                          child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            controller: _viewModel.scrollController,
-                            children: [
-                              ...List.generate(openedTables.length, (index) {
-                                return _buildTable(
-                                  index: index,
-                                  tableName: openedTables.elementAt(index).name,
-                                  isHovered: _viewModel
-                                          .currentHoveredOpenedTableIndex ==
-                                      index,
-                                  isSelected:
-                                      _viewModel.currentOpenedTableIndex ==
-                                          index,
-                                );
-                              }),
-                              const SizedBox(width: 12.0),
-                              Align(
-                                alignment: const Alignment(0, -0.1),
-                                child: MyIconButton(
-                                  onTap: () {
-                                    _viewModel.addOpenedTable(
-                                      openedTables.elementAt(
-                                        _viewModel.currentOpenedTableIndex!,
-                                      ),
-                                      duplicate: true,
-                                    );
-                                    SchedulerBinding.instance
-                                        .addPostFrameCallback((timeStamp) {
-                                      _viewModel.scrollController.animateTo(
-                                        _viewModel.scrollController.position
-                                            .maxScrollExtent,
-                                        curve: Curves.easeOut,
-                                        duration: const Duration(
-                                          milliseconds: 500,
-                                        ),
-                                      );
-                                    });
-                                  },
-                                  icon: Icons.add_outlined,
-                                ),
+                        ValueListenableBuilder(
+                          valueListenable: _viewModel.currentOpenedTableIndex,
+                          builder: (_, currentOpenedTableIndex, child) {
+                            return ValueListenableBuilder(
+                              valueListenable:
+                                  _viewModel.currentHoveredOpenedTableIndex,
+                              builder:
+                                  (_, currentHoveredOpenedTableIndex, __) =>
+                                      _buildOpenedTableTabs(
+                                openedTables,
+                                currentHoveredOpenedTableIndex:
+                                    currentHoveredOpenedTableIndex,
+                                currentOpenedTableIndex:
+                                    currentOpenedTableIndex,
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
                         Expanded(
                           child: Container(
                             padding: const EdgeInsets.all(16.0),
                             color: Colors.navigationBackground,
-                            child: IndexedStack(
-                              index: _viewModel.currentOpenedTableIndex,
-                              children:
-                                  List.generate(openedTables.length, (index) {
-                                final openedTable =
-                                    openedTables.elementAt(index);
-                                return TableExplorer(
-                                  tableName: openedTable.name,
-                                  getRecordsFuture: _viewModel.getTableRecords,
+                            child: ValueListenableBuilder(
+                              valueListenable:
+                                  _viewModel.currentOpenedTableIndex,
+                              builder: (_, currentOpenedTableIndex, __) {
+                                return IndexedStack(
+                                  index: currentOpenedTableIndex,
+                                  children: List.generate(openedTables.length,
+                                      (index) {
+                                    final openedTable =
+                                        openedTables.elementAt(index);
+                                    return TableExplorer(
+                                      tableName: openedTable.name,
+                                      getRecordsFuture:
+                                          _viewModel.getTableRecords,
+                                    );
+                                  }),
                                 );
-                              }),
+                              },
                             ),
                           ),
                         ),
@@ -138,6 +112,58 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
+
+  Widget _buildOpenedTableTabs(
+    Iterable<Table> openedTables, {
+    int? currentHoveredOpenedTableIndex,
+    int? currentOpenedTableIndex,
+  }) =>
+      Container(
+        height: Constants.kTopNavigationBarHeight,
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Colors.border),
+          ),
+        ),
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          controller: _viewModel.scrollController,
+          children: [
+            ...List.generate(openedTables.length, (index) {
+              return _buildTable(
+                index: index,
+                tableName: openedTables.elementAt(index).name,
+                isHovered: currentHoveredOpenedTableIndex == index,
+                isSelected: currentOpenedTableIndex == index,
+              );
+            }),
+            const SizedBox(width: 12.0),
+            Align(
+              alignment: const Alignment(0, -0.1),
+              child: MyIconButton(
+                onTap: () {
+                  _viewModel.addOpenedTable(
+                    openedTables.elementAt(
+                      currentOpenedTableIndex!,
+                    ),
+                    duplicate: true,
+                  );
+                  SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+                    _viewModel.scrollController.animateTo(
+                      _viewModel.scrollController.position.maxScrollExtent,
+                      curve: Curves.easeOut,
+                      duration: const Duration(
+                        milliseconds: 500,
+                      ),
+                    );
+                  });
+                },
+                icon: Icons.add_outlined,
+              ),
+            ),
+          ],
+        ),
+      );
 
   Widget _buildTable({
     required int index,
