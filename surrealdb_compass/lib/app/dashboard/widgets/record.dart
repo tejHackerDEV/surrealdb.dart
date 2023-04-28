@@ -30,6 +30,14 @@ class _RecordState extends State<Record> {
   }
 
   Widget _buildJson(Map<String, dynamic> json, {required double multiplier}) {
+    // https://stackoverflow.com/a/68488055
+    final id = json['id'];
+    if (id != null) {
+      json = {
+        'id': id,
+        ...json,
+      };
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(json.length, (index) {
