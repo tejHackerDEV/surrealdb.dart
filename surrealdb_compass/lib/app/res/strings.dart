@@ -21,4 +21,6 @@ class Strings {
   // Common
   static const where = 'WHERE';
   static const select = 'SELECT';
+  static const records = 'Records';
+  static const indexes = 'Indexes';
 }

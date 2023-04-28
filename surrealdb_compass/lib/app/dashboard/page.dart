@@ -4,6 +4,8 @@ import 'package:flutter/scheduler.dart';
 import '../../domain/entities/info/helpers/table.dart';
 import '../constants.dart';
 import '../res/colors.dart';
+import '../res/strings.dart';
+import '../widgets/gradient_text.dart';
 import '../widgets/my_icon_button.dart';
 import 'view_model.dart';
 import 'widgets/side_navigation_bar.dart';
@@ -92,10 +94,33 @@ class _DashboardPageState extends State<DashboardPage> {
                                       (index) {
                                     final openedTable =
                                         openedTables.elementAt(index);
-                                    return TableExplorer(
-                                      key: ValueKey(openedTable),
-                                      tableName: openedTable.name,
-                                      getRecords: _viewModel.getTableRecords,
+                                    return Column(
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            _buildTableMetaData(
+                                              title: '24',
+                                              description: Strings.records,
+                                            ),
+                                            const SizedBox(width: 24.0),
+                                            _buildTableMetaData(
+                                              title: '0',
+                                              description: Strings.indexes,
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 16.0),
+                                        Expanded(
+                                          child: TableExplorer(
+                                            key: ValueKey(openedTable),
+                                            tableName: openedTable.name,
+                                            getRecords:
+                                                _viewModel.getTableRecords,
+                                          ),
+                                        ),
+                                      ],
                                     );
                                   }),
                                 );
@@ -244,4 +269,24 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
+
+  Widget _buildTableMetaData({
+    required String title,
+    required String description,
+  }) =>
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GradientText(
+            title,
+            fontSize: 24.0,
+          ),
+          Text(
+            description,
+            style: const TextStyle(
+              fontSize: 12.0,
+            ),
+          ),
+        ],
+      );
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart' hide Colors;
+import 'package:surrealdb_compass/app/widgets/gradient_text.dart';
 
-import '../constants.dart';
-import '../res/colors.dart';
 import '../res/strings.dart';
 
 class SurrealDBText extends StatelessWidget {
@@ -17,24 +16,10 @@ class SurrealDBText extends StatelessWidget {
           Strings.surreal,
           style: style,
         ),
-        ShaderMask(
-          blendMode: BlendMode.modulate,
-          shaderCallback: (size) => Constants.kPrimaryGradient.createShader(
-            Rect.fromLTWH(
-              0,
-              0,
-              size.width,
-              size.height,
-            ),
-          ),
-          child: Text(
-            Strings.db,
-            style: TextStyle(
-              fontSize: style?.fontSize,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+        GradientText(
+          Strings.db,
+          fontSize: style?.fontSize,
+          fontWeight: FontWeight.bold,
         ),
       ],
     );
