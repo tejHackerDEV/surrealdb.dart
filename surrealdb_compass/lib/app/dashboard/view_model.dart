@@ -78,19 +78,15 @@ class DashboardPageViewModel extends ViewModel {
     bool duplicate = false,
   }) {
     List<Table> call() {
+      final tableToAdd = table.copyWith(openedAt: DateTime.now());
       final openedTables = this.openedTables.value;
       // insert/updated the tableName at the selectedIndex
-      if (currentOpenedTableIndex.value == null) {
-        openedTables.add(table);
-        currentOpenedTableIndex.value = 0;
+      if (currentOpenedTableIndex.value == null || duplicate) {
+        openedTables.add(tableToAdd);
+        currentOpenedTableIndex.value = openedTables.length - 1;
         return openedTables;
       }
-      if (!duplicate) {
-        openedTables[currentOpenedTableIndex.value!] = table;
-        return openedTables;
-      }
-      openedTables.add(table);
-      currentOpenedTableIndex.value = openedTables.length - 1;
+      openedTables[currentOpenedTableIndex.value!] = tableToAdd;
       return openedTables;
     }
 

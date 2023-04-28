@@ -93,6 +93,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     final openedTable =
                                         openedTables.elementAt(index);
                                     return TableExplorer(
+                                      key: ValueKey(openedTable),
                                       tableName: openedTable.name,
                                       getRecords: _viewModel.getTableRecords,
                                     );
