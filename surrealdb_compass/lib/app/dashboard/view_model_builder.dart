@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 
 import '../../data/repository.dart';
 import '../../use_cases/get_db_info.dart';
+import '../../use_cases/get_records_count.dart';
 import '../../use_cases/get_table_records.dart';
 import '../utils/builders.dart';
 import '../view_model.dart';
@@ -14,6 +15,7 @@ class DashboardPageViewModelBuilder extends ViewModelBuilder {
     return DashboardPageViewModel(
       GetDBInfoUseCase(repository),
       GetTableRecordsUseCase(repository),
+      GetRecordsCountUseCase(repository),
     );
   }
 }

@@ -2,15 +2,18 @@ import 'package:flutter/widgets.dart' hide Table;
 
 import '../../domain/entities/info/helpers/table.dart';
 import '../../use_cases/get_db_info.dart';
+import '../../use_cases/get_records_count.dart';
 import '../../use_cases/get_table_records.dart';
 import '../view_model.dart';
 
 class DashboardPageViewModel extends ViewModel {
   final GetDBInfoUseCase _getDBInfoUseCase;
   final GetTableRecordsUseCase _getTableRecordsUseCase;
+  final GetRecordsCountUseCase _getRecordsCountUseCase;
   DashboardPageViewModel(
     this._getDBInfoUseCase,
     this._getTableRecordsUseCase,
+    this._getRecordsCountUseCase,
   );
 
   final scrollController = ScrollController();
@@ -20,6 +23,11 @@ class DashboardPageViewModel extends ViewModel {
   final currentOpenedTableIndex = ValueNotifier<int?>(null);
   final currentHoveredOpenedTableIndex = ValueNotifier<int?>(null);
   final openedTables = ValueNotifier(<Table>[]);
+
+  /// Stores the count of the records for a particular table
+  /// <br>
+  /// `key` will the tableName & `value` will be the count of the records.
+  final tableRecordsCount = <String, ValueNotifier<int?>>{};
 
   @override
   void dispose() {
@@ -42,6 +50,21 @@ class DashboardPageViewModel extends ViewModel {
 
   Future<Iterable<Map<String, dynamic>>> getTableRecords(String tableName) {
     return _getTableRecordsUseCase.call(tableName);
+  }
+
+  Future<int> _getRecordsCount(String tableName) {
+    return _getRecordsCountUseCase.call(tableName);
+  }
+
+  void loadTableRecordsCount(String tableName) {
+    tableRecordsCount.update(tableName, (countNotifier) {
+      _getRecordsCount(tableName).then((value) => countNotifier.value = value);
+      return countNotifier;
+    }, ifAbsent: () {
+      final countNotifier = ValueNotifier<int?>(null);
+      _getRecordsCount(tableName).then((value) => countNotifier.value = value);
+      return countNotifier;
+    });
   }
 
   void removeOpenedTableAt(int index) {
@@ -78,6 +101,7 @@ class DashboardPageViewModel extends ViewModel {
     bool duplicate = false,
   }) {
     List<Table> call() {
+      loadTableRecordsCount(table.name);
       final tableToAdd = table.copyWith(openedAt: DateTime.now());
       final openedTables = this.openedTables.value;
       // insert/updated the tableName at the selectedIndex

@@ -96,21 +96,32 @@ class _DashboardPageState extends State<DashboardPage> {
                                         openedTables.elementAt(index);
                                     return Column(
                                       children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            _buildTableMetaData(
-                                              title: '24',
-                                              description: Strings.records,
-                                            ),
-                                            const SizedBox(width: 24.0),
-                                            _buildTableMetaData(
-                                              title: '0',
-                                              description: Strings.indexes,
-                                            ),
-                                          ],
-                                        ),
+                                        ValueListenableBuilder(
+                                            valueListenable:
+                                                _viewModel.tableRecordsCount[
+                                                    openedTable.name]!,
+                                            builder: (_, value, __) {
+                                              if (value == null) {
+                                                return const SizedBox.shrink();
+                                              }
+                                              return Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  _buildTableMetaData(
+                                                    title: value.toString(),
+                                                    description:
+                                                        Strings.records,
+                                                  ),
+                                                  const SizedBox(width: 24.0),
+                                                  _buildTableMetaData(
+                                                    title: '0',
+                                                    description:
+                                                        Strings.indexes,
+                                                  ),
+                                                ],
+                                              );
+                                            }),
                                         const SizedBox(height: 16.0),
                                         Expanded(
                                           child: TableExplorer(
