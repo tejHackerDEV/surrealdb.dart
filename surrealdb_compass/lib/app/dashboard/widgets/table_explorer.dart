@@ -6,17 +6,17 @@ import '../../widgets/my_rounded_elevated_button.dart';
 import '../../widgets/my_text_form_field.dart';
 import 'record.dart';
 
-typedef GetRecordsFuture = Future<Iterable<Map<String, dynamic>>> Function(
+typedef GetRecords = Future<Iterable<Map<String, dynamic>>> Function(
   String tableName,
 );
 
 class TableExplorer extends StatefulWidget {
   final String tableName;
-  final GetRecordsFuture getRecordsFuture;
+  final GetRecords getRecords;
   const TableExplorer({
     Key? key,
     required this.tableName,
-    required this.getRecordsFuture,
+    required this.getRecords,
   }) : super(key: key);
 
   @override
@@ -24,12 +24,12 @@ class TableExplorer extends StatefulWidget {
 }
 
 class _TableExplorerState extends State<TableExplorer> {
-  late GetRecordsFuture getRecordsFuture;
+  late Future<Iterable<Map<String, dynamic>>> getRecordsFuture;
 
   @override
   void initState() {
     super.initState();
-    getRecordsFuture = widget.getRecordsFuture;
+    getRecordsFuture = widget.getRecords(widget.tableName);
   }
 
   @override
@@ -59,7 +59,7 @@ class _TableExplorerState extends State<TableExplorer> {
         const SizedBox(height: 16.0),
         Expanded(
           child: FutureBuilder(
-              future: getRecordsFuture(widget.tableName),
+              future: getRecordsFuture,
               builder: (_, snapshot) {
                 switch (snapshot.connectionState) {
                   case ConnectionState.none:

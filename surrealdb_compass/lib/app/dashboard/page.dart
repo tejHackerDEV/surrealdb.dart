@@ -94,8 +94,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                         openedTables.elementAt(index);
                                     return TableExplorer(
                                       tableName: openedTable.name,
-                                      getRecordsFuture:
-                                          _viewModel.getTableRecords,
+                                      getRecords: _viewModel.getTableRecords,
                                     );
                                   }),
                                 );
