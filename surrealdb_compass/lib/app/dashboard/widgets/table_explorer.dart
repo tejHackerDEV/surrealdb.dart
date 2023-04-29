@@ -150,36 +150,34 @@ class _TableExplorerState extends State<TableExplorer> {
   Widget _buildRecordOptions(int index, Map<String, dynamic> recordJson) => Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          InkWell(
-            onTap: () => widget
-                .onDeleteRecordByThing(
-              recordJson['id'],
-            )
-                .then((_) {
-              _records!.removeAt(index);
-              _decreaseRecordCount(1);
-              _animatedListKey.currentState!.removeItem(
-                index,
-                (context, animation) => _buildRecord(
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8.0,
+              vertical: 4.0,
+            ),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.white),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: MyIconButton(
+              Icons.delete,
+              size: 14.0,
+              onTap: () => widget
+                  .onDeleteRecordByThing(
+                recordJson['id'],
+              )
+                  .then((_) {
+                _records!.removeAt(index);
+                _decreaseRecordCount(1);
+                _animatedListKey.currentState!.removeItem(
                   index,
-                  animation,
-                  recordJson,
-                ),
-              );
-            }),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8.0,
-                vertical: 4.0,
-              ),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white),
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: const Icon(
-                Icons.delete,
-                size: 14.0,
-              ),
+                  (context, animation) => _buildRecord(
+                    index,
+                    animation,
+                    recordJson,
+                  ),
+                );
+              }),
             ),
           ),
         ],
