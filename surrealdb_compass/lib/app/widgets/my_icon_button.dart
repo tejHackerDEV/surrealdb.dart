@@ -4,11 +4,13 @@ import '../res/colors.dart';
 
 class MyIconButton extends StatefulWidget {
   final VoidCallback onTap;
-  final IconData icon;
-  const MyIconButton({
+  final IconData iconData;
+  final double size;
+  const MyIconButton(
+    this.iconData, {
     Key? key,
     required this.onTap,
-    required this.icon,
+    this.size = 16.0,
   }) : super(key: key);
 
   @override
@@ -27,10 +29,10 @@ class _MyIconButtonState extends State<MyIconButton> {
       hoverColor: Colors.white.withOpacity(
         0.12,
       ),
-      radius: 12.0,
+      radius: widget.size - 4,
       child: Icon(
-        widget.icon,
-        size: 16.0,
+        widget.iconData,
+        size: widget.size,
         color: !isHovered ? null : Colors.white,
       ),
     );

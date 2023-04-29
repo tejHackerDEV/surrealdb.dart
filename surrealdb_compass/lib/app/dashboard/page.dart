@@ -129,6 +129,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                             tableName: openedTable.name,
                                             getRecords:
                                                 _viewModel.getTableRecords,
+                                            getRecordsCount:
+                                                _viewModel.getRecordsCount,
                                             onDeleteRecordByThing:
                                                 _viewModel.deleteRecordByThing,
                                           ),
@@ -179,6 +181,7 @@ class _DashboardPageState extends State<DashboardPage> {
             Align(
               alignment: const Alignment(0, -0.1),
               child: MyIconButton(
+                Icons.add_outlined,
                 onTap: () {
                   _viewModel.addOpenedTable(
                     openedTables.elementAt(
@@ -196,7 +199,6 @@ class _DashboardPageState extends State<DashboardPage> {
                     );
                   });
                 },
-                icon: Icons.add_outlined,
               ),
             ),
           ],
@@ -273,8 +275,8 @@ class _DashboardPageState extends State<DashboardPage> {
             Opacity(
               opacity: closeIconOpacity,
               child: MyIconButton(
+                Icons.close_outlined,
                 onTap: () => _viewModel.removeOpenedTableAt(index),
-                icon: Icons.close_outlined,
               ),
             ),
           ],

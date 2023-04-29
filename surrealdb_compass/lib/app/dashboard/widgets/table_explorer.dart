@@ -3,6 +3,7 @@ import 'package:flutter/material.dart' hide Colors;
 import '../../res/colors.dart';
 import '../../res/strings.dart';
 import '../../widgets/animations/scaling_animation.dart';
+import '../../widgets/my_icon_button.dart';
 import '../../widgets/my_rounded_elevated_button.dart';
 import '../../widgets/my_text_form_field.dart';
 import 'record.dart';
@@ -11,16 +12,22 @@ typedef GetRecords = Future<Iterable<Map<String, dynamic>>> Function(
   String tableName, {
   String? whereClause,
 });
+typedef GetRecordsCount = Future<int> Function(
+  String tableName, {
+  String? whereClause,
+});
 typedef DeleteRecordByThing = Future Function(String thing);
 
 class TableExplorer extends StatefulWidget {
   final String tableName;
   final GetRecords getRecords;
+  final GetRecordsCount getRecordsCount;
   final DeleteRecordByThing onDeleteRecordByThing;
   const TableExplorer({
     Key? key,
     required this.tableName,
     required this.getRecords,
+    required this.getRecordsCount,
     required this.onDeleteRecordByThing,
   }) : super(key: key);
 
@@ -47,6 +54,10 @@ class _TableExplorerState extends State<TableExplorer> {
 
   final _whereClauseTextEditingController = TextEditingController();
 
+  /// Holds the number of records that exists in the table for the
+  /// current filters user has applied
+  final _recordsCount = ValueNotifier<int?>(null);
+
   @override
   void initState() {
     super.initState();
@@ -60,20 +71,17 @@ class _TableExplorerState extends State<TableExplorer> {
   }
 
   Future<void> _loadRecords() async {
+    _loadRecordsCount();
     // key should be changed everytime to force the
     // widget to re-render otherwise even through
     // we get latest records list will show the previous ones
     _animatedListKey = GlobalKey();
-    String? whereClause = _whereClauseTextEditingController.text.trim();
-    if (whereClause.isEmpty) {
-      whereClause = null;
-    }
     _isLoaded = false;
     if (mounted) {
       setState(() {});
     }
     await widget
-        .getRecords(widget.tableName, whereClause: whereClause)
+        .getRecords(widget.tableName, whereClause: _whereClause)
         .then((value) {
       _records = value.toList();
       _recordsError = null; // reset error value in case of success result
@@ -87,6 +95,15 @@ class _TableExplorerState extends State<TableExplorer> {
       }
       setState(() {});
     });
+  }
+
+  Future<void> _loadRecordsCount() {
+    _recordsCount.value = null;
+
+    return widget
+        .getRecordsCount(widget.tableName, whereClause: _whereClause)
+        .then((value) => _recordsCount.value = value)
+        .catchError((_) => _recordsCount.value = -1);
   }
 
   void _setHoveredIndex(int? index) => setState(() {
@@ -140,6 +157,7 @@ class _TableExplorerState extends State<TableExplorer> {
             )
                 .then((_) {
               _records!.removeAt(index);
+              _decreaseRecordCount(1);
               _animatedListKey.currentState!.removeItem(
                 index,
                 (context, animation) => _buildRecord(
@@ -167,6 +185,51 @@ class _TableExplorerState extends State<TableExplorer> {
         ],
       );
 
+  Widget _buildRecordsCount(int? count) {
+    final stringBuffer = StringBuffer();
+    if (count == null || count == 0) {
+      stringBuffer.write('0 - 0 of 0');
+    } else {
+      stringBuffer.write('1 - $count of $count');
+    }
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Text(
+          stringBuffer.toString(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(width: 16.0),
+        MyIconButton(
+          Icons.chevron_left_outlined,
+          onTap: () {},
+          size: 24.0,
+        ),
+        const SizedBox(width: 4.0),
+        MyIconButton(
+          Icons.chevron_right_outlined,
+          onTap: () {},
+          size: 24.0,
+        ),
+      ],
+    );
+  }
+
+  void _decreaseRecordCount(int by) {
+    _recordsCount.value = _recordsCount.value! - by;
+  }
+
+  String? get _whereClause {
+    String? whereClause = _whereClauseTextEditingController.text.trim();
+    if (whereClause.isEmpty) {
+      whereClause = null;
+    }
+    return whereClause;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -191,6 +254,10 @@ class _TableExplorerState extends State<TableExplorer> {
             ),
           ],
         ),
+        const SizedBox(height: 16.0),
+        ValueListenableBuilder(
+            valueListenable: _recordsCount,
+            builder: (_, value, __) => _buildRecordsCount(value)),
         const SizedBox(height: 16.0),
         Expanded(
           child: Builder(builder: (context) {

@@ -62,8 +62,11 @@ class DashboardPageViewModel extends ViewModel {
     );
   }
 
-  Future<int> _getRecordsCount(String tableName) {
-    return _getRecordsCountUseCase.call(tableName);
+  Future<int> getRecordsCount(
+    String tableName, {
+    String? whereClause,
+  }) {
+    return _getRecordsCountUseCase.call(tableName, whereClause: whereClause);
   }
 
   Future<void> deleteRecordByThing(String thing) {
@@ -74,11 +77,11 @@ class DashboardPageViewModel extends ViewModel {
 
   void loadTableRecordsCount(String tableName) {
     tableRecordsCount.update(tableName, (countNotifier) {
-      _getRecordsCount(tableName).then((value) => countNotifier.value = value);
+      getRecordsCount(tableName).then((value) => countNotifier.value = value);
       return countNotifier;
     }, ifAbsent: () {
       final countNotifier = ValueNotifier<int?>(null);
-      _getRecordsCount(tableName).then((value) => countNotifier.value = value);
+      getRecordsCount(tableName).then((value) => countNotifier.value = value);
       return countNotifier;
     });
   }

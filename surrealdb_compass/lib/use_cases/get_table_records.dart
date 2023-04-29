@@ -1,4 +1,5 @@
 import '../data/repository.dart';
+import 'utils.dart';
 
 class GetTableRecordsUseCase {
   final Repository _repository;
@@ -9,15 +10,14 @@ class GetTableRecordsUseCase {
     String tableName, {
     String? whereClause,
   }) async {
-    final stringBuffer = StringBuffer(
-      'SELECT * FROM type::table(\$table_name)',
+    final generatedQuery = Utils.generateQuery(
+      tableName,
+      whereClause: whereClause,
     );
-    if (whereClause != null) {
-      stringBuffer.write(' WHERE $whereClause');
-    }
-    final result = await _repository.query(stringBuffer.toString(), {
-      'table_name': tableName,
-    });
+    final result = await _repository.query(
+      generatedQuery.first,
+      generatedQuery.last,
+    );
     return result.first.result.cast<Map<String, dynamic>>();
   }
 }
