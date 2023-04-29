@@ -129,6 +129,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                             tableName: openedTable.name,
                                             getRecords:
                                                 _viewModel.getTableRecords,
+                                            onDeleteRecordByThing:
+                                                _viewModel.deleteRecordByThing,
                                           ),
                                         ),
                                       ],

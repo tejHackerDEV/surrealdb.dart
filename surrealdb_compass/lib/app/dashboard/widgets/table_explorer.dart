@@ -10,14 +10,17 @@ import 'record.dart';
 typedef GetRecords = Future<Iterable<Map<String, dynamic>>> Function(
   String tableName,
 );
+typedef DeleteRecordByThing = Future Function(String thing);
 
 class TableExplorer extends StatefulWidget {
   final String tableName;
   final GetRecords getRecords;
+  final DeleteRecordByThing onDeleteRecordByThing;
   const TableExplorer({
     Key? key,
     required this.tableName,
     required this.getRecords,
+    required this.onDeleteRecordByThing,
   }) : super(key: key);
 
   @override
@@ -84,27 +87,31 @@ class _TableExplorerState extends State<TableExplorer> {
                       separatorBuilder: (_, __) => const SizedBox(
                         height: 8.0,
                       ),
-                      itemBuilder: (_, index) => MouseRegion(
-                        onEnter: (_) => _setHoveredIndex(index),
-                        onExit: (_) => _setHoveredIndex(null),
-                        child: Container(
-                          padding: const EdgeInsets.all(24.0),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Colors.border,
-                            ),
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          child: Stack(
-                            children: [
-                              Record(
-                                json: records.elementAt(index),
+                      itemBuilder: (_, index) {
+                        final recordJson = records.elementAt(index);
+                        return MouseRegion(
+                          onEnter: (_) => _setHoveredIndex(index),
+                          onExit: (_) => _setHoveredIndex(null),
+                          child: Container(
+                            padding: const EdgeInsets.all(24.0),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.border,
                               ),
-                              if (_hoveredIndex == index) _buildRecordOptions(),
-                            ],
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Stack(
+                              children: [
+                                Record(
+                                  json: recordJson,
+                                ),
+                                if (_hoveredIndex == index)
+                                  _buildRecordOptions(recordJson),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     );
                 }
               }),
@@ -113,21 +120,30 @@ class _TableExplorerState extends State<TableExplorer> {
     );
   }
 
-  Widget _buildRecordOptions() => Row(
+  Widget _buildRecordOptions(Map<String, dynamic> recordJson) => Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 8.0,
-              vertical: 4.0,
-            ),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.white),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: const Icon(
-              Icons.delete,
-              size: 14.0,
+          InkWell(
+            onTap: () => widget
+                .onDeleteRecordByThing(
+                  recordJson['id'],
+                )
+                .then((_) => setState(() {
+                      getRecordsFuture = widget.getRecords(widget.tableName);
+                    })),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 4.0,
+              ),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: const Icon(
+                Icons.delete,
+                size: 14.0,
+              ),
             ),
           ),
         ],

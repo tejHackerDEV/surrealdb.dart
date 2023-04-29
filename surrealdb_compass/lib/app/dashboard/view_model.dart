@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart' hide Table;
+import 'package:surrealdb_compass/utils/extensions/string.dart';
 
 import '../../domain/entities/info/helpers/table.dart';
+import '../../use_cases/delete_table_record_by_thing.dart';
 import '../../use_cases/get_db_info.dart';
 import '../../use_cases/get_records_count.dart';
 import '../../use_cases/get_table_records.dart';
@@ -10,10 +12,12 @@ class DashboardPageViewModel extends ViewModel {
   final GetDBInfoUseCase _getDBInfoUseCase;
   final GetTableRecordsUseCase _getTableRecordsUseCase;
   final GetRecordsCountUseCase _getRecordsCountUseCase;
+  final DeleteTableRecordByThingUseCase _deleteTableRecordsUseCase;
   DashboardPageViewModel(
     this._getDBInfoUseCase,
     this._getTableRecordsUseCase,
     this._getRecordsCountUseCase,
+    this._deleteTableRecordsUseCase,
   );
 
   final scrollController = ScrollController();
@@ -56,6 +60,12 @@ class DashboardPageViewModel extends ViewModel {
     return _getRecordsCountUseCase.call(tableName);
   }
 
+  Future<void> deleteRecordByThing(String thing) {
+    return _deleteTableRecordsUseCase.call(thing).then((_) {
+      decreaseTableRecordCount(thing.tableName, 1);
+    });
+  }
+
   void loadTableRecordsCount(String tableName) {
     tableRecordsCount.update(tableName, (countNotifier) {
       _getRecordsCount(tableName).then((value) => countNotifier.value = value);
@@ -65,6 +75,11 @@ class DashboardPageViewModel extends ViewModel {
       _getRecordsCount(tableName).then((value) => countNotifier.value = value);
       return countNotifier;
     });
+  }
+
+  void decreaseTableRecordCount(String tableName, int by) {
+    final countNotifier = tableRecordsCount[tableName]!;
+    countNotifier.value = countNotifier.value! - by;
   }
 
   void removeOpenedTableAt(int index) {
