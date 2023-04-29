@@ -76,13 +76,12 @@ class _TableExplorerState extends State<TableExplorer> {
         .getRecords(widget.tableName, whereClause: whereClause)
         .then((value) {
       _records = value.toList();
-      _isLoaded = true;
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
+      _recordsError = null; // reset error value in case of success result
     }).catchError((error) {
       _recordsError = error;
+      _records = null; // reset success value in case of error result
+    }).whenComplete(() {
+      _isLoaded = true;
       if (!mounted) {
         return;
       }
