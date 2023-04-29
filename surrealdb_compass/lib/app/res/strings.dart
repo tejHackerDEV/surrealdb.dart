@@ -17,6 +17,7 @@ class Strings {
   static const tables = 'Tables';
   static const search = 'Search';
   static const tablesNotFound = 'No tables found';
+  static const recordsNotFound = 'No records found';
 
   // Common
   static const where = 'WHERE';

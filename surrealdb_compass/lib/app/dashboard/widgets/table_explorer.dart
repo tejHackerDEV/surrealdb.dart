@@ -174,6 +174,9 @@ class _TableExplorerState extends State<TableExplorer> {
             if (_records == null) {
               return Text(_recordsError.toString());
             }
+            if (_records!.isEmpty) {
+              return const Center(child: Text(Strings.recordsNotFound));
+            }
             return AnimatedList(
               key: _animatedListKey,
               initialItemCount: _records!.length,
