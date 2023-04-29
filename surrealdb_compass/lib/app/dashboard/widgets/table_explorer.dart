@@ -8,8 +8,9 @@ import '../../widgets/my_text_form_field.dart';
 import 'record.dart';
 
 typedef GetRecords = Future<Iterable<Map<String, dynamic>>> Function(
-  String tableName,
-);
+  String tableName, {
+  String? whereClause,
+});
 typedef DeleteRecordByThing = Future Function(String thing);
 
 class TableExplorer extends StatefulWidget {
@@ -28,7 +29,7 @@ class TableExplorer extends StatefulWidget {
 }
 
 class _TableExplorerState extends State<TableExplorer> {
-  final _animatedListKey = GlobalKey<AnimatedListState>();
+  late GlobalKey<AnimatedListState> _animatedListKey;
 
   /// Holds the records of a particular table which are currently
   /// being showing to the user
@@ -44,10 +45,36 @@ class _TableExplorerState extends State<TableExplorer> {
   /// Holds the current index of the record on which the mouse is hovered
   int? _hoveredIndex;
 
+  final _whereClauseTextEditingController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
-    widget.getRecords(widget.tableName).then((value) {
+    _loadRecords();
+  }
+
+  @override
+  void dispose() {
+    _whereClauseTextEditingController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadRecords() async {
+    // key should be changed everytime to force the
+    // widget to re-render otherwise even through
+    // we get latest records list will show the previous ones
+    _animatedListKey = GlobalKey();
+    String? whereClause = _whereClauseTextEditingController.text.trim();
+    if (whereClause.isEmpty) {
+      whereClause = null;
+    }
+    _isLoaded = false;
+    if (mounted) {
+      setState(() {});
+    }
+    await widget
+        .getRecords(widget.tableName, whereClause: whereClause)
+        .then((value) {
       _records = value.toList();
       _isLoaded = true;
       if (!mounted) {
@@ -149,9 +176,9 @@ class _TableExplorerState extends State<TableExplorer> {
           children: [
             Expanded(
               child: MyTextFormField(
+                controller: _whereClauseTextEditingController,
                 hintText: Strings.where,
                 maxLines: 10,
-                onChanged: (value) {},
               ),
             ),
             const SizedBox(width: 16.0),
@@ -161,7 +188,7 @@ class _TableExplorerState extends State<TableExplorer> {
                 horizontal: 28.0,
                 vertical: 16.0,
               ),
-              onTap: () {},
+              onTap: _loadRecords,
             ),
           ],
         ),

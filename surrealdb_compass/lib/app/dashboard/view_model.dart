@@ -52,8 +52,14 @@ class DashboardPageViewModel extends ViewModel {
     }).whenComplete(() => _isFetching.value = false);
   }
 
-  Future<Iterable<Map<String, dynamic>>> getTableRecords(String tableName) {
-    return _getTableRecordsUseCase.call(tableName);
+  Future<Iterable<Map<String, dynamic>>> getTableRecords(
+    String tableName, {
+    String? whereClause,
+  }) {
+    return _getTableRecordsUseCase.call(
+      tableName,
+      whereClause: whereClause,
+    );
   }
 
   Future<int> _getRecordsCount(String tableName) {
