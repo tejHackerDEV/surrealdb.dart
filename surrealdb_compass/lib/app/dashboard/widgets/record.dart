@@ -12,7 +12,7 @@ class Record extends StatefulWidget {
 }
 
 class _RecordState extends State<Record> {
-  Widget _buildJson(Map<String, dynamic> json, {required double multiplier}) {
+  Widget _buildJson(Map<String, dynamic> json, {required double leftPadding}) {
     // https://stackoverflow.com/a/68488055
     final id = json['id'];
     if (id != null) {
@@ -32,26 +32,26 @@ class _RecordState extends State<Record> {
           title: Row(
             children: [
               _buildKey(entry.key),
-              _buildValue(entry.value, multiplier: multiplier),
+              _buildValue(entry.value, leftPadding: leftPadding),
             ],
           ),
           children: [
             if (_isMap(entry.value))
-              _buildJson(entry.value, multiplier: multiplier),
+              _buildJson(entry.value, leftPadding: leftPadding),
             if (_isIterable(entry.value))
-              _buildList(entry.value, multiplier: multiplier),
+              _buildList(entry.value, leftPadding: leftPadding),
           ],
         );
       }),
     );
   }
 
-  Widget _buildList(List<dynamic> list, {required double multiplier}) {
+  Widget _buildList(List<dynamic> list, {required double leftPadding}) {
     final listJson = <String, dynamic>{};
     for (int i = 0; i < list.length; i++) {
       listJson['$i'] = list.elementAt(i);
     }
-    return _buildJson(listJson, multiplier: multiplier);
+    return _buildJson(listJson, leftPadding: leftPadding);
   }
 
   Widget _buildKey(String key) => RichText(
@@ -73,7 +73,7 @@ class _RecordState extends State<Record> {
         ),
       );
 
-  Widget _buildValue(dynamic value, {required double multiplier}) {
+  Widget _buildValue(dynamic value, {required double leftPadding}) {
     Widget child;
     if (_isMap(value)) {
       child = const Text(
@@ -107,7 +107,7 @@ class _RecordState extends State<Record> {
       );
     }
     return Padding(
-      padding: EdgeInsets.only(left: multiplier),
+      padding: EdgeInsets.only(left: leftPadding),
       child: child,
     );
   }
@@ -122,7 +122,7 @@ class _RecordState extends State<Record> {
   Widget build(BuildContext context) {
     return _buildJson(
       widget.json,
-      multiplier: 8.0,
+      leftPadding: 8.0,
     );
   }
 }
