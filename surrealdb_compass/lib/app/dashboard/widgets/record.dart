@@ -12,23 +12,6 @@ class Record extends StatefulWidget {
 }
 
 class _RecordState extends State<Record> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24.0),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.border,
-        ),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: _buildJson(
-        widget.json,
-        multiplier: 8.0,
-      ),
-    );
-  }
-
   Widget _buildJson(Map<String, dynamic> json, {required double multiplier}) {
     // https://stackoverflow.com/a/68488055
     final id = json['id'];
@@ -134,4 +117,12 @@ class _RecordState extends State<Record> {
   bool _isIterable(dynamic value) => value is Iterable<dynamic>;
 
   bool _isString(dynamic value) => value is String;
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildJson(
+      widget.json,
+      multiplier: 8.0,
+    );
+  }
 }

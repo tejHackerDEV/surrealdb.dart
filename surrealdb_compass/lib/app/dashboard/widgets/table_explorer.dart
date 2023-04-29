@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide Colors;
 
+import '../../res/colors.dart';
 import '../../res/strings.dart';
 import '../../widgets/my_list_view.dart';
 import '../../widgets/my_rounded_elevated_button.dart';
@@ -26,11 +27,18 @@ class TableExplorer extends StatefulWidget {
 class _TableExplorerState extends State<TableExplorer> {
   late Future<Iterable<Map<String, dynamic>>> getRecordsFuture;
 
+  /// Holds the current index of the record on which the mouse is hovered
+  int? _hoveredIndex;
+
   @override
   void initState() {
     super.initState();
     getRecordsFuture = widget.getRecords(widget.tableName);
   }
+
+  void _setHoveredIndex(int? index) => setState(() {
+        _hoveredIndex = index;
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -76,8 +84,26 @@ class _TableExplorerState extends State<TableExplorer> {
                       separatorBuilder: (_, __) => const SizedBox(
                         height: 8.0,
                       ),
-                      itemBuilder: (_, index) => Record(
-                        json: records.elementAt(index),
+                      itemBuilder: (_, index) => MouseRegion(
+                        onEnter: (_) => _setHoveredIndex(index),
+                        onExit: (_) => _setHoveredIndex(null),
+                        child: Container(
+                          padding: const EdgeInsets.all(24.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.border,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: Stack(
+                            children: [
+                              Record(
+                                json: records.elementAt(index),
+                              ),
+                              if (_hoveredIndex == index) _buildRecordOptions(),
+                            ],
+                          ),
+                        ),
                       ),
                     );
                 }
@@ -86,4 +112,24 @@ class _TableExplorerState extends State<TableExplorer> {
       ],
     );
   }
+
+  Widget _buildRecordOptions() => Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8.0,
+              vertical: 4.0,
+            ),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.white),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: const Icon(
+              Icons.delete,
+              size: 14.0,
+            ),
+          ),
+        ],
+      );
 }
