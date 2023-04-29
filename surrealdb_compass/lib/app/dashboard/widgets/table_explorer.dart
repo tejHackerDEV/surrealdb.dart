@@ -171,8 +171,8 @@ class _TableExplorerState extends State<TableExplorer> {
             if (!_isLoaded) {
               return const Center(child: CircularProgressIndicator());
             }
-            if (_records == null) {
-              return Text(_recordsError.toString());
+            if (_recordsError != null) {
+              return Center(child: Text(_recordsError.toString()));
             }
             if (_records!.isEmpty) {
               return const Center(child: Text(Strings.recordsNotFound));
