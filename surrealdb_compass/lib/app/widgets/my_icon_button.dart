@@ -3,7 +3,7 @@ import 'package:flutter/material.dart' hide Colors;
 import '../res/colors.dart';
 
 class MyIconButton extends StatefulWidget {
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final IconData iconData;
   final double size;
   const MyIconButton(
@@ -22,6 +22,7 @@ class _MyIconButtonState extends State<MyIconButton> {
   @override
   Widget build(BuildContext context) {
     return InkResponse(
+      mouseCursor: widget.onTap == null ? SystemMouseCursors.forbidden : null,
       onTap: widget.onTap,
       onHover: (value) => setState(() {
         isHovered = value;

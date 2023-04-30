@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart' hide Colors;
 
+import '../../constants.dart';
 import '../../res/colors.dart';
 import '../../res/strings.dart';
 import '../../widgets/animations/scaling_animation.dart';
@@ -11,10 +14,14 @@ import 'record.dart';
 typedef GetRecords = Future<Iterable<Map<String, dynamic>>> Function(
   String tableName, {
   String? whereClause,
+  int? limit,
+  int? start,
 });
 typedef GetRecordsCount = Future<int> Function(
   String tableName, {
   String? whereClause,
+  int? limit,
+  int? start,
 });
 typedef DeleteRecordByThing = Future Function(String thing);
 
@@ -58,10 +65,16 @@ class _TableExplorerState extends State<TableExplorer> {
   /// current filters user has applied
   final _recordsCount = ValueNotifier<int?>(null);
 
+  /// Holds the number of the top record that is being showing in the page
+  final _currentPageRecordStartsAt = ValueNotifier<int?>(null);
+
+  /// Holds the number of the last record that is being showing in the page
+  final _currentPageRecordEndsAt = ValueNotifier<int?>(null);
+
   @override
   void initState() {
     super.initState();
-    _loadRecords();
+    _loadRecords(isInitialLoad: true);
   }
 
   @override
@@ -70,7 +83,21 @@ class _TableExplorerState extends State<TableExplorer> {
     super.dispose();
   }
 
-  Future<void> _loadRecords() async {
+  /// Loads the records as per the current configuration applied.
+  ///
+  /// <br>
+  /// [isInitialLoad] should be set to `true` only if we were
+  /// loading records for the first time with the current configuration
+  /// or when we were force reloading the records.
+  ///
+  /// <br>
+  /// [shouldUpdateRecordEndsAt] should be set to `false` only if
+  /// we were navigating back via pagination, otherwise there will be
+  /// some wrong number being displayed
+  Future<void> _loadRecords({
+    required bool isInitialLoad,
+    bool shouldUpdateRecordEndsAt = true,
+  }) async {
     _loadRecordsCount();
     // key should be changed everytime to force the
     // widget to re-render otherwise even through
@@ -81,9 +108,23 @@ class _TableExplorerState extends State<TableExplorer> {
       setState(() {});
     }
     await widget
-        .getRecords(widget.tableName, whereClause: _whereClause)
+        .getRecords(
+      widget.tableName,
+      whereClause: _whereClause,
+      limit: Constants.kPaginationLimit,
+      start: math.max(0, (_currentPageRecordStartsAt.value ?? 0) - 1),
+    )
         .then((value) {
       _records = value.toList();
+      _currentPageRecordStartsAt.value ??= 1;
+      if (shouldUpdateRecordEndsAt) {
+        if (!isInitialLoad) {
+          _currentPageRecordEndsAt.value =
+              (_currentPageRecordEndsAt.value ?? 0) + _records!.length;
+        } else {
+          _currentPageRecordEndsAt.value = _records!.length;
+        }
+      }
       _recordsError = null; // reset error value in case of success result
     }).catchError((error) {
       _recordsError = error;
@@ -183,12 +224,44 @@ class _TableExplorerState extends State<TableExplorer> {
         ],
       );
 
-  Widget _buildRecordsCount(int? count) {
+  Widget _buildRecordsCount({
+    int? recordsCount,
+    int? currentPageRecordStartsAt,
+    int? currentPageRecordEndsAt,
+  }) {
     final stringBuffer = StringBuffer();
-    if (count == null || count == 0) {
+    VoidCallback? previousPageTap;
+    VoidCallback? nextPageTap;
+    if (recordsCount == null || recordsCount == 0) {
       stringBuffer.write('0 - 0 of 0');
     } else {
-      stringBuffer.write('1 - $count of $count');
+      currentPageRecordStartsAt ??= 0;
+      currentPageRecordEndsAt ??= 0;
+      stringBuffer.write(
+        '$currentPageRecordStartsAt - $currentPageRecordEndsAt of $recordsCount',
+      );
+      // if we can go back then add the call back
+      if (currentPageRecordStartsAt - 1 > 0) {
+        previousPageTap = () {
+          _currentPageRecordStartsAt.value =
+              currentPageRecordStartsAt! - Constants.kPaginationLimit;
+          _currentPageRecordEndsAt.value =
+              currentPageRecordEndsAt! - _records!.length;
+          _loadRecords(
+            isInitialLoad: false,
+            shouldUpdateRecordEndsAt: false,
+          );
+        };
+      }
+      if (currentPageRecordEndsAt < recordsCount) {
+        nextPageTap = () {
+          _currentPageRecordStartsAt.value =
+              currentPageRecordStartsAt! + Constants.kPaginationLimit;
+          _loadRecords(
+            isInitialLoad: false,
+          );
+        };
+      }
     }
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -203,13 +276,13 @@ class _TableExplorerState extends State<TableExplorer> {
         const SizedBox(width: 16.0),
         MyIconButton(
           Icons.chevron_left_outlined,
-          onTap: () {},
+          onTap: previousPageTap,
           size: 24.0,
         ),
         const SizedBox(width: 4.0),
         MyIconButton(
           Icons.chevron_right_outlined,
-          onTap: () {},
+          onTap: nextPageTap,
           size: 24.0,
         ),
       ],
@@ -248,14 +321,26 @@ class _TableExplorerState extends State<TableExplorer> {
                 horizontal: 28.0,
                 vertical: 16.0,
               ),
-              onTap: _loadRecords,
+              onTap: () => _loadRecords(isInitialLoad: true),
             ),
           ],
         ),
         const SizedBox(height: 16.0),
         ValueListenableBuilder(
-            valueListenable: _recordsCount,
-            builder: (_, value, __) => _buildRecordsCount(value)),
+          valueListenable: _recordsCount,
+          builder: (_, recordsCount, __) => ValueListenableBuilder(
+            valueListenable: _currentPageRecordStartsAt,
+            builder: (_, currentPageRecordStartsAt, __) =>
+                ValueListenableBuilder(
+              valueListenable: _currentPageRecordEndsAt,
+              builder: (_, currentPageRecordEndAt, __) => _buildRecordsCount(
+                recordsCount: recordsCount,
+                currentPageRecordStartsAt: currentPageRecordStartsAt,
+                currentPageRecordEndsAt: currentPageRecordEndAt,
+              ),
+            ),
+          ),
+        ),
         const SizedBox(height: 16.0),
         Expanded(
           child: Builder(builder: (context) {

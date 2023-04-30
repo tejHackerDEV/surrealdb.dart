@@ -9,10 +9,14 @@ class GetTableRecordsUseCase {
   Future<Iterable<Map<String, dynamic>>> call(
     String tableName, {
     String? whereClause,
+    int? limit,
+    int? start,
   }) async {
     final generatedQuery = Utils.generateQuery(
       tableName,
       whereClause: whereClause,
+      limit: limit,
+      start: start,
     );
     final result = await _repository.query(
       generatedQuery.first,

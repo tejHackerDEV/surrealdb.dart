@@ -55,18 +55,29 @@ class DashboardPageViewModel extends ViewModel {
   Future<Iterable<Map<String, dynamic>>> getTableRecords(
     String tableName, {
     String? whereClause,
+    int? limit,
+    int? start,
   }) {
     return _getTableRecordsUseCase.call(
       tableName,
       whereClause: whereClause,
+      limit: limit,
+      start: start,
     );
   }
 
   Future<int> getRecordsCount(
     String tableName, {
     String? whereClause,
+    int? limit,
+    int? start,
   }) {
-    return _getRecordsCountUseCase.call(tableName, whereClause: whereClause);
+    return _getRecordsCountUseCase.call(
+      tableName,
+      whereClause: whereClause,
+      limit: limit,
+      start: start,
+    );
   }
 
   Future<void> deleteRecordByThing(String thing) {

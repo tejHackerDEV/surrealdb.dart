@@ -11,4 +11,6 @@ class Constants {
   );
 
   static const kTopNavigationBarHeight = 55.0;
+
+  static const kPaginationLimit = 20;
 }
