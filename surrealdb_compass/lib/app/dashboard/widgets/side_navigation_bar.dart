@@ -129,81 +129,105 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
             // https://stackoverflow.com/a/68570066
             child: Material(
               type: MaterialType.transparency,
-              child: Padding(
-                padding: padding,
-                child: ValueListenableBuilder(
-                    valueListenable: _isLoaded,
-                    builder: (_, isLoaded, __) {
-                      Widget child;
-                      ValueChanged<String>? onSearch;
-                      if (!isLoaded) {
-                        child = const SizedBox.shrink();
+              child: ValueListenableBuilder(
+                  valueListenable: _isLoaded,
+                  builder: (_, isLoaded, __) {
+                    Widget child;
+                    ValueChanged<String>? onSearch;
+                    if (!isLoaded) {
+                      child = const SizedBox.shrink();
+                    } else {
+                      if (_tablesError != null) {
+                        child = Center(
+                          child: Text(_tablesError.toString()),
+                        );
                       } else {
-                        if (_tablesError != null) {
-                          child = Center(
-                            child: Text(_tablesError.toString()),
-                          );
-                        } else {
-                          onSearch = (_) => _filterTables();
+                        onSearch = (_) => _filterTables();
 
-                          child = ValueListenableBuilder(
-                              valueListenable: _filteredTables,
-                              builder: (_, filteredTables, __) {
-                                return ValueListenableBuilder(
-                                    valueListenable: _selectedTable,
-                                    builder: (_, selectedTable, __) =>
-                                        MyListView(
-                                          padding: const EdgeInsets.all(4.0),
-                                          itemCount: filteredTables.length,
-                                          emptyBuilder: (_) => const Text(
-                                              Strings.tablesNotFound),
-                                          separatorBuilder: (_, __) =>
-                                              const SizedBox(
-                                            height: 8.0,
-                                          ),
-                                          itemBuilder: (_, index) {
-                                            final table =
-                                                filteredTables.elementAt(index);
-                                            return MyListTile(
-                                              onTap: () =>
-                                                  widget.onTableSelected(
-                                                _selectedTable.value = table,
-                                              ),
-                                              isSelected: table.name ==
-                                                  selectedTable?.name,
-                                              leading: Icons.grid_on_outlined,
-                                              title: table.name,
-                                            );
-                                          },
-                                        ));
-                              });
-                        }
+                        child = ValueListenableBuilder(
+                            valueListenable: _filteredTables,
+                            builder: (_, filteredTables, __) {
+                              return ValueListenableBuilder(
+                                  valueListenable: _selectedTable,
+                                  builder: (_, selectedTable, __) => MyListView(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 4.0,
+                                        ),
+                                        itemCount: filteredTables.length,
+                                        emptyBuilder: (_) =>
+                                            const Text(Strings.tablesNotFound),
+                                        separatorBuilder: (_, __) =>
+                                            const SizedBox(
+                                          height: 8.0,
+                                        ),
+                                        itemBuilder: (_, index) {
+                                          final table =
+                                              filteredTables.elementAt(index);
+                                          return MyListTile(
+                                            onTap: () => widget.onTableSelected(
+                                              _selectedTable.value = table,
+                                            ),
+                                            isSelected: table.name ==
+                                                selectedTable?.name,
+                                            leading: Icons.grid_on_outlined,
+                                            title: table.name,
+                                          );
+                                        },
+                                      ));
+                            });
                       }
-                      return Column(
-                        children: [
-                          ListTile(
-                            leading: const Icon(Icons.table_chart_outlined),
-                            title: const Text(Strings.tables),
-                            trailing: MyIconButton(
-                              Icons.refresh_outlined,
-                              size: 24.0,
-                              onTap: _loadTables,
+                    }
+                    return Column(
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.only(
+                            left: padding.horizontal * 0.5,
+                            right: padding.horizontal * 0.3,
+                          ),
+                          minLeadingWidth: 10,
+                          leading: const Icon(Icons.table_chart_outlined),
+                          title: const Text(Strings.tables),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              MyIconButton(
+                                Icons.refresh_outlined,
+                                size: 20.0,
+                                onTap: _loadTables,
+                              ),
+                              const SizedBox(width: 16.0),
+                              const MyIconButton(
+                                Icons.add_outlined,
+                                size: 20.0,
+                                onTap: null,
+                              )
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16.0),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: padding.horizontal * 0.5,
+                            ),
+                            child: Column(
+                              children: [
+                                MyTextFormField(
+                                  controller: _filterTextEditingController,
+                                  hintText: Strings.search,
+                                  onChanged: onSearch,
+                                ),
+                                const SizedBox(height: 16.0),
+                                Expanded(
+                                  child: child,
+                                )
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 16.0),
-                          MyTextFormField(
-                            controller: _filterTextEditingController,
-                            hintText: Strings.search,
-                            onChanged: onSearch,
-                          ),
-                          const SizedBox(height: 16.0),
-                          Expanded(
-                            child: child,
-                          ),
-                        ],
-                      );
-                    }),
-              ),
+                        ),
+                      ],
+                    );
+                  }),
             ),
           ),
         ],
