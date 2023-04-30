@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart' hide Colors;
 
 import '../../constants.dart';
@@ -66,15 +64,17 @@ class _TableExplorerState extends State<TableExplorer> {
   final _recordsCount = ValueNotifier<int?>(null);
 
   /// Holds the number of the top record that is being showing in the page
-  final _currentPageRecordStartsAt = ValueNotifier<int?>(null);
+  final _currentPageRecordStartsAt = ValueNotifier<int>(0);
 
   /// Holds the number of the last record that is being showing in the page
-  final _currentPageRecordEndsAt = ValueNotifier<int?>(null);
+  final _currentPageRecordEndsAt = ValueNotifier<int>(0);
 
   @override
   void initState() {
     super.initState();
-    _loadRecords(isInitialLoad: true);
+    _loadRecords(
+      start: 0,
+    );
   }
 
   @override
@@ -95,7 +95,7 @@ class _TableExplorerState extends State<TableExplorer> {
   /// we were navigating back via pagination, otherwise there will be
   /// some wrong number being displayed
   Future<void> _loadRecords({
-    required bool isInitialLoad,
+    required int start,
     bool shouldUpdateRecordEndsAt = true,
   }) async {
     _loadRecordsCount();
@@ -112,15 +112,16 @@ class _TableExplorerState extends State<TableExplorer> {
       widget.tableName,
       whereClause: _whereClause,
       limit: Constants.kPaginationLimit,
-      start: math.max(0, (_currentPageRecordStartsAt.value ?? 0) - 1),
+      start: start,
     )
         .then((value) {
       _records = value.toList();
-      _currentPageRecordStartsAt.value ??= 1;
+      // increment by 1 because we display the startAt by adding 1
+      _currentPageRecordStartsAt.value = start + 1;
+
       if (shouldUpdateRecordEndsAt) {
-        if (!isInitialLoad) {
-          _currentPageRecordEndsAt.value =
-              (_currentPageRecordEndsAt.value ?? 0) + _records!.length;
+        if (start != 0) {
+          _currentPageRecordEndsAt.value += _records!.length;
         } else {
           _currentPageRecordEndsAt.value = _records!.length;
         }
@@ -224,41 +225,37 @@ class _TableExplorerState extends State<TableExplorer> {
         ],
       );
 
-  Widget _buildRecordsCount({
+  Widget _buildRecordsCount(
+    int currentPageRecordStartsAt,
+    int currentPageRecordEndsAt,
     int? recordsCount,
-    int? currentPageRecordStartsAt,
-    int? currentPageRecordEndsAt,
-  }) {
+  ) {
     final stringBuffer = StringBuffer();
     VoidCallback? previousPageTap;
     VoidCallback? nextPageTap;
     if (recordsCount == null || recordsCount == 0) {
       stringBuffer.write('0 - 0 of 0');
     } else {
-      currentPageRecordStartsAt ??= 0;
-      currentPageRecordEndsAt ??= 0;
       stringBuffer.write(
         '$currentPageRecordStartsAt - $currentPageRecordEndsAt of $recordsCount',
       );
+      // decrease by 1 because we display the startAt by adding 1
+      int start = currentPageRecordStartsAt - 1;
       // if we can go back then add the call back
-      if (currentPageRecordStartsAt - 1 > 0) {
+      if (start > 0) {
         previousPageTap = () {
-          _currentPageRecordStartsAt.value =
-              currentPageRecordStartsAt! - Constants.kPaginationLimit;
           _currentPageRecordEndsAt.value =
-              currentPageRecordEndsAt! - _records!.length;
+              currentPageRecordEndsAt - _records!.length;
           _loadRecords(
-            isInitialLoad: false,
+            start: start - Constants.kPaginationLimit,
             shouldUpdateRecordEndsAt: false,
           );
         };
       }
       if (currentPageRecordEndsAt < recordsCount) {
         nextPageTap = () {
-          _currentPageRecordStartsAt.value =
-              currentPageRecordStartsAt! + Constants.kPaginationLimit;
           _loadRecords(
-            isInitialLoad: false,
+            start: start + Constants.kPaginationLimit,
           );
         };
       }
@@ -291,6 +288,7 @@ class _TableExplorerState extends State<TableExplorer> {
 
   void _decreaseRecordCount(int by) {
     _recordsCount.value = _recordsCount.value! - by;
+    _currentPageRecordEndsAt.value -= by;
   }
 
   String? get _whereClause {
@@ -321,7 +319,9 @@ class _TableExplorerState extends State<TableExplorer> {
                 horizontal: 28.0,
                 vertical: 16.0,
               ),
-              onTap: () => _loadRecords(isInitialLoad: true),
+              onTap: () => _loadRecords(
+                start: 0,
+              ),
             ),
           ],
         ),
@@ -334,9 +334,9 @@ class _TableExplorerState extends State<TableExplorer> {
                 ValueListenableBuilder(
               valueListenable: _currentPageRecordEndsAt,
               builder: (_, currentPageRecordEndAt, __) => _buildRecordsCount(
-                recordsCount: recordsCount,
-                currentPageRecordStartsAt: currentPageRecordStartsAt,
-                currentPageRecordEndsAt: currentPageRecordEndAt,
+                currentPageRecordStartsAt,
+                currentPageRecordEndAt,
+                recordsCount,
               ),
             ),
           ),
