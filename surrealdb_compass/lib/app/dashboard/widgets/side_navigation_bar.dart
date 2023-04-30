@@ -5,6 +5,7 @@ import '../../constants.dart';
 import '../../res/assets.dart';
 import '../../res/colors.dart';
 import '../../res/strings.dart';
+import '../../widgets/my_icon_button.dart';
 import '../../widgets/my_list_tile.dart';
 import '../../widgets/my_list_view.dart';
 import '../../widgets/my_text_form_field.dart';
@@ -183,9 +184,10 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
                           ListTile(
                             leading: const Icon(Icons.table_chart_outlined),
                             title: const Text(Strings.tables),
-                            trailing: InkWell(
+                            trailing: MyIconButton(
+                              Icons.refresh_outlined,
+                              size: 24.0,
                               onTap: _loadTables,
-                              child: const Icon(Icons.refresh_outlined),
                             ),
                           ),
                           const SizedBox(height: 16.0),
