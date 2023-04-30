@@ -35,120 +35,105 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ValueListenableBuilder(
-        valueListenable: _viewModel.isFetching,
-        builder: (_, value, child) {
-          if (value) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return child!;
-        },
-        child: Row(
-          children: [
-            Expanded(
-              child: SideNavigationBar(
-                tables: _viewModel.tables,
-                onTableSelected: _viewModel.addOpenedTable,
-                onTablesRefresh: _viewModel.getTables,
-              ),
+      body: Row(
+        children: [
+          Expanded(
+            child: SideNavigationBar(
+              onTableSelected: _viewModel.addOpenedTable,
+              onTablesRefresh: _viewModel.getTables,
             ),
-            Expanded(
-              flex: 4,
-              child: ValueListenableBuilder(
-                  valueListenable: _viewModel.openedTables,
-                  builder: (_, openedTables, __) {
-                    if (openedTables.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-                    return Column(
-                      children: [
-                        ValueListenableBuilder(
-                          valueListenable: _viewModel.currentOpenedTableIndex,
-                          builder: (_, currentOpenedTableIndex, child) {
-                            return ValueListenableBuilder(
-                              valueListenable:
-                                  _viewModel.currentHoveredOpenedTableIndex,
-                              builder:
-                                  (_, currentHoveredOpenedTableIndex, __) =>
-                                      _buildOpenedTableTabs(
-                                openedTables,
-                                currentHoveredOpenedTableIndex:
-                                    currentHoveredOpenedTableIndex,
-                                currentOpenedTableIndex:
-                                    currentOpenedTableIndex,
-                              ),
-                            );
-                          },
-                        ),
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(16.0),
-                            color: Colors.navigationBackground,
-                            child: ValueListenableBuilder(
-                              valueListenable:
-                                  _viewModel.currentOpenedTableIndex,
-                              builder: (_, currentOpenedTableIndex, __) {
-                                return IndexedStack(
-                                  index: currentOpenedTableIndex,
-                                  children: List.generate(openedTables.length,
-                                      (index) {
-                                    final openedTable =
-                                        openedTables.elementAt(index);
-                                    return Column(
-                                      children: [
-                                        ValueListenableBuilder(
-                                            valueListenable:
-                                                _viewModel.tableRecordsCount[
-                                                    openedTable.name]!,
-                                            builder: (_, value, __) {
-                                              if (value == null) {
-                                                return const SizedBox.shrink();
-                                              }
-                                              return Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  _buildTableMetaData(
-                                                    title: value.toString(),
-                                                    description:
-                                                        Strings.records,
-                                                  ),
-                                                  const SizedBox(width: 24.0),
-                                                  _buildTableMetaData(
-                                                    title: '0',
-                                                    description:
-                                                        Strings.indexes,
-                                                  ),
-                                                ],
-                                              );
-                                            }),
-                                        const SizedBox(height: 16.0),
-                                        Expanded(
-                                          child: TableExplorer(
-                                            key: ValueKey(openedTable),
-                                            tableName: openedTable.name,
-                                            getRecords:
-                                                _viewModel.getTableRecords,
-                                            getRecordsCount:
-                                                _viewModel.getRecordsCount,
-                                            onDeleteRecordByThing:
-                                                _viewModel.deleteRecordByThing,
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  }),
-                                );
-                              },
+          ),
+          Expanded(
+            flex: 4,
+            child: ValueListenableBuilder(
+                valueListenable: _viewModel.openedTables,
+                builder: (_, openedTables, __) {
+                  if (openedTables.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return Column(
+                    children: [
+                      ValueListenableBuilder(
+                        valueListenable: _viewModel.currentOpenedTableIndex,
+                        builder: (_, currentOpenedTableIndex, child) {
+                          return ValueListenableBuilder(
+                            valueListenable:
+                                _viewModel.currentHoveredOpenedTableIndex,
+                            builder: (_, currentHoveredOpenedTableIndex, __) =>
+                                _buildOpenedTableTabs(
+                              openedTables,
+                              currentHoveredOpenedTableIndex:
+                                  currentHoveredOpenedTableIndex,
+                              currentOpenedTableIndex: currentOpenedTableIndex,
                             ),
+                          );
+                        },
+                      ),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(16.0),
+                          color: Colors.navigationBackground,
+                          child: ValueListenableBuilder(
+                            valueListenable: _viewModel.currentOpenedTableIndex,
+                            builder: (_, currentOpenedTableIndex, __) {
+                              return IndexedStack(
+                                index: currentOpenedTableIndex,
+                                children:
+                                    List.generate(openedTables.length, (index) {
+                                  final openedTable =
+                                      openedTables.elementAt(index);
+                                  return Column(
+                                    children: [
+                                      ValueListenableBuilder(
+                                          valueListenable:
+                                              _viewModel.tableRecordsCount[
+                                                  openedTable.name]!,
+                                          builder: (_, value, __) {
+                                            if (value == null) {
+                                              return const SizedBox.shrink();
+                                            }
+                                            return Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                _buildTableMetaData(
+                                                  title: value.toString(),
+                                                  description: Strings.records,
+                                                ),
+                                                const SizedBox(width: 24.0),
+                                                _buildTableMetaData(
+                                                  title: '0',
+                                                  description: Strings.indexes,
+                                                ),
+                                              ],
+                                            );
+                                          }),
+                                      const SizedBox(height: 16.0),
+                                      Expanded(
+                                        child: TableExplorer(
+                                          key: ValueKey(openedTable),
+                                          tableName: openedTable.name,
+                                          getRecords:
+                                              _viewModel.getTableRecords,
+                                          getRecordsCount:
+                                              _viewModel.getRecordsCount,
+                                          onDeleteRecordByThing:
+                                              _viewModel.deleteRecordByThing,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }),
+                              );
+                            },
                           ),
                         ),
-                      ],
-                    );
-                  }),
-            ),
-          ],
-        ),
+                      ),
+                    ],
+                  );
+                }),
+          ),
+        ],
       ),
     );
   }

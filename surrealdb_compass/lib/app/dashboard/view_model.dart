@@ -22,8 +22,6 @@ class DashboardPageViewModel extends ViewModel {
 
   final scrollController = ScrollController();
 
-  final _isFetching = ValueNotifier(false);
-  final _tables = <Table>[];
   final currentOpenedTableIndex = ValueNotifier<int?>(null);
   final currentHoveredOpenedTableIndex = ValueNotifier<int?>(null);
   final openedTables = ValueNotifier(<Table>[]);
@@ -39,17 +37,15 @@ class DashboardPageViewModel extends ViewModel {
     super.dispose();
   }
 
-  void getTables() {
-    _isFetching.value = true;
-    _getDBInfoUseCase.call().then((value) {
-      _tables.clear();
-      _tables.addAll(value.tables.entries.map(
+  Future<Iterable<Table>> getTables() {
+    return _getDBInfoUseCase.call().then((value) {
+      return value.tables.entries.map(
         (entry) => Table(
           name: entry.key,
           query: entry.value,
         ),
-      ));
-    }).whenComplete(() => _isFetching.value = false);
+      );
+    });
   }
 
   Future<Iterable<Map<String, dynamic>>> getTableRecords(
@@ -163,8 +159,4 @@ class DashboardPageViewModel extends ViewModel {
     }
     currentHoveredOpenedTableIndex.value = index;
   }
-
-  ValueNotifier<bool> get isFetching => _isFetching;
-
-  Iterable<Table> get tables => _tables;
 }

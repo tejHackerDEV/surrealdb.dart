@@ -9,13 +9,13 @@ import '../../widgets/my_list_tile.dart';
 import '../../widgets/my_list_view.dart';
 import '../../widgets/my_text_form_field.dart';
 
+typedef TablesCallback = Future<Iterable<Table>> Function();
+
 class SideNavigationBar extends StatefulWidget {
-  final Iterable<Table> tables;
   final ValueChanged<Table> onTableSelected;
-  final VoidCallback onTablesRefresh;
+  final TablesCallback onTablesRefresh;
   const SideNavigationBar({
     Key? key,
-    required this.tables,
     required this.onTableSelected,
     required this.onTablesRefresh,
   }) : super(key: key);
@@ -25,15 +25,56 @@ class SideNavigationBar extends StatefulWidget {
 }
 
 class _SideNavigationBarState extends State<SideNavigationBar> {
-  late Iterable<Table> tables;
-  late Iterable<Table> filteredTables;
+  /// Holds the tables that were present in the db
+  Iterable<Table>? _tables;
+
+  /// Holds any error that occurs while loading the tables
+  Object? _tablesError;
+
+  /// Check this variable before accessing [_tables] or [_tablesError]
+  /// as they will be populated correctly only after this returns true
+  final _isLoaded = ValueNotifier(false);
+
+  final _filteredTables = ValueNotifier<Iterable<Table>>([]);
   Table? selectedTable;
+
+  final _filterTextEditingController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    tables = widget.tables;
-    filteredTables = tables;
+    _loadTables();
+  }
+
+  @override
+  void dispose() {
+    _filterTextEditingController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadTables() async {
+    _isLoaded.value = false;
+    await widget.onTablesRefresh().then((value) {
+      _tables = value;
+      _tablesError = null; // reset error value in case of success result
+    }).catchError((error) {
+      _tablesError = error;
+      _tables = null; // reset success value in case of error result
+    }).whenComplete(() {
+      _filterTables();
+      _isLoaded.value = true;
+    });
+  }
+
+  void _filterTables() {
+    if (_filterTextEditingController.text.isEmpty) {
+      _filteredTables.value = _tables!;
+      return;
+    }
+    _filteredTables.value = _tables?.where(
+          (table) => table.name.contains(_filterTextEditingController.text),
+        ) ??
+        [];
   }
 
   @override
@@ -89,55 +130,72 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
               type: MaterialType.transparency,
               child: Padding(
                 padding: padding,
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.table_chart_outlined),
-                      title: const Text(Strings.tables),
-                      trailing: InkWell(
-                        onTap: widget.onTablesRefresh,
-                        child: const Icon(Icons.refresh_outlined),
-                      ),
-                    ),
-                    const SizedBox(height: 16.0),
-                    MyTextFormField(
-                      hintText: Strings.search,
-                      onChanged: (value) {
-                        setState(() {
-                          if (value.isEmpty) {
-                            filteredTables = tables;
-                            return;
-                          }
-                          filteredTables = tables.where(
-                            (table) => table.name.contains(value),
+                child: ValueListenableBuilder(
+                    valueListenable: _isLoaded,
+                    builder: (_, isLoaded, __) {
+                      Widget child;
+                      ValueChanged<String>? onSearch;
+                      if (!isLoaded) {
+                        child = const SizedBox.shrink();
+                      } else {
+                        if (_tablesError != null) {
+                          child = Center(
+                            child: Text(_tablesError.toString()),
                           );
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16.0),
-                    Expanded(
-                      child: MyListView(
-                        padding: const EdgeInsets.all(4.0),
-                        itemCount: filteredTables.length,
-                        emptyBuilder: (_) => const Text(Strings.tablesNotFound),
-                        separatorBuilder: (_, __) => const SizedBox(
-                          height: 8.0,
-                        ),
-                        itemBuilder: (_, index) {
-                          final table = filteredTables.elementAt(index);
-                          return MyListTile(
-                            onTap: () => setState(() {
-                              widget.onTableSelected(selectedTable = table);
-                            }),
-                            isSelected: table == selectedTable,
-                            leading: Icons.grid_on_outlined,
-                            title: table.name,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                        } else {
+                          onSearch = (_) => _filterTables();
+
+                          child = ValueListenableBuilder(
+                              valueListenable: _filteredTables,
+                              builder: (_, value, __) {
+                                return MyListView(
+                                  padding: const EdgeInsets.all(4.0),
+                                  itemCount: value.length,
+                                  emptyBuilder: (_) =>
+                                      const Text(Strings.tablesNotFound),
+                                  separatorBuilder: (_, __) => const SizedBox(
+                                    height: 8.0,
+                                  ),
+                                  itemBuilder: (_, index) {
+                                    final table = value.elementAt(index);
+                                    return MyListTile(
+                                      onTap: () => setState(() {
+                                        widget.onTableSelected(
+                                          selectedTable = table,
+                                        );
+                                      }),
+                                      isSelected: table == selectedTable,
+                                      leading: Icons.grid_on_outlined,
+                                      title: table.name,
+                                    );
+                                  },
+                                );
+                              });
+                        }
+                      }
+                      return Column(
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.table_chart_outlined),
+                            title: const Text(Strings.tables),
+                            trailing: InkWell(
+                              onTap: _loadTables,
+                              child: const Icon(Icons.refresh_outlined),
+                            ),
+                          ),
+                          const SizedBox(height: 16.0),
+                          MyTextFormField(
+                            controller: _filterTextEditingController,
+                            hintText: Strings.search,
+                            onChanged: onSearch,
+                          ),
+                          const SizedBox(height: 16.0),
+                          Expanded(
+                            child: child,
+                          ),
+                        ],
+                      );
+                    }),
               ),
             ),
           ),
