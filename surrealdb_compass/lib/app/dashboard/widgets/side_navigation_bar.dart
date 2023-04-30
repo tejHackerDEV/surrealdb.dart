@@ -36,7 +36,7 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
   final _isLoaded = ValueNotifier(false);
 
   final _filteredTables = ValueNotifier<Iterable<Table>>([]);
-  Table? selectedTable;
+  final _selectedTable = ValueNotifier<Table?>(null);
 
   final _filterTextEditingController = TextEditingController();
 
@@ -147,29 +147,34 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
 
                           child = ValueListenableBuilder(
                               valueListenable: _filteredTables,
-                              builder: (_, value, __) {
-                                return MyListView(
-                                  padding: const EdgeInsets.all(4.0),
-                                  itemCount: value.length,
-                                  emptyBuilder: (_) =>
-                                      const Text(Strings.tablesNotFound),
-                                  separatorBuilder: (_, __) => const SizedBox(
-                                    height: 8.0,
-                                  ),
-                                  itemBuilder: (_, index) {
-                                    final table = value.elementAt(index);
-                                    return MyListTile(
-                                      onTap: () => setState(() {
-                                        widget.onTableSelected(
-                                          selectedTable = table,
-                                        );
-                                      }),
-                                      isSelected: table == selectedTable,
-                                      leading: Icons.grid_on_outlined,
-                                      title: table.name,
-                                    );
-                                  },
-                                );
+                              builder: (_, filteredTables, __) {
+                                return ValueListenableBuilder(
+                                    valueListenable: _selectedTable,
+                                    builder: (_, selectedTable, __) =>
+                                        MyListView(
+                                          padding: const EdgeInsets.all(4.0),
+                                          itemCount: filteredTables.length,
+                                          emptyBuilder: (_) => const Text(
+                                              Strings.tablesNotFound),
+                                          separatorBuilder: (_, __) =>
+                                              const SizedBox(
+                                            height: 8.0,
+                                          ),
+                                          itemBuilder: (_, index) {
+                                            final table =
+                                                filteredTables.elementAt(index);
+                                            return MyListTile(
+                                              onTap: () =>
+                                                  widget.onTableSelected(
+                                                _selectedTable.value = table,
+                                              ),
+                                              isSelected: table.name ==
+                                                  selectedTable?.name,
+                                              leading: Icons.grid_on_outlined,
+                                              title: table.name,
+                                            );
+                                          },
+                                        ));
                               });
                         }
                       }
