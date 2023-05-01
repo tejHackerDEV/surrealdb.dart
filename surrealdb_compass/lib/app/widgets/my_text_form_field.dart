@@ -9,12 +9,14 @@ class MyTextFormField extends StatelessWidget {
   final String hintText;
   final ValueChanged<String>? onChanged;
   final int maxLines;
+  final bool autoFocus;
   const MyTextFormField({
     Key? key,
     this.controller,
     required this.hintText,
     this.onChanged,
     this.maxLines = 1,
+    this.autoFocus = false,
   }) : super(key: key);
 
   @override
@@ -23,6 +25,7 @@ class MyTextFormField extends StatelessWidget {
       borderSide: BorderSide(color: Colors.transparent),
     );
     return TextFormField(
+      autofocus: autoFocus,
       controller: controller,
       style: const TextStyle(color: Colors.textFieldContent),
       onChanged: onChanged,

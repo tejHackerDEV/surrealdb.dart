@@ -46,6 +46,9 @@ class _MyAppState extends State<MyApp> {
         listTileTheme: defaultThemeData.listTileTheme.copyWith(
           iconColor: Colors.icon,
         ),
+        dialogTheme: defaultThemeData.dialogTheme.copyWith(
+          backgroundColor: Colors.background,
+        ),
       ),
       routerConfig: appRouter.config,
     );

@@ -5,9 +5,11 @@ import '../../constants.dart';
 import '../../res/assets.dart';
 import '../../res/colors.dart';
 import '../../res/strings.dart';
+import '../../widgets/my_alert_dialog.dart';
 import '../../widgets/my_icon_button.dart';
 import '../../widgets/my_list_tile.dart';
 import '../../widgets/my_list_view.dart';
+import '../../widgets/my_rounded_elevated_button.dart';
 import '../../widgets/my_text_form_field.dart';
 
 typedef TablesCallback = Future<Iterable<Table>> Function();
@@ -131,7 +133,7 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
               type: MaterialType.transparency,
               child: ValueListenableBuilder(
                   valueListenable: _isLoaded,
-                  builder: (_, isLoaded, __) {
+                  builder: (context, isLoaded, __) {
                     Widget child;
                     ValueChanged<String>? onSearch;
                     if (!isLoaded) {
@@ -196,10 +198,12 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
                                 onTap: _loadTables,
                               ),
                               const SizedBox(width: 16.0),
-                              const MyIconButton(
+                              MyIconButton(
                                 Icons.add_outlined,
                                 size: 20.0,
-                                onTap: null,
+                                onTap: () {
+                                  _showCreateNewTableDialog(context);
+                                },
                               )
                             ],
                           ),
@@ -232,6 +236,70 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showCreateNewTableDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (_) {
+          return const _CreateNewTableDialog();
+        });
+  }
+}
+
+class _CreateNewTableDialog extends StatefulWidget {
+  const _CreateNewTableDialog({Key? key}) : super(key: key);
+
+  @override
+  State<_CreateNewTableDialog> createState() => _CreateNewTableDialogState();
+}
+
+class _CreateNewTableDialogState extends State<_CreateNewTableDialog> {
+  final _tableNameTextEditingController = TextEditingController();
+
+  final _shouldEnableCreateButton = ValueNotifier(false);
+
+  @override
+  void dispose() {
+    _tableNameTextEditingController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MyAlertDialog(
+      'Create Table',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          MyTextFormField(
+            controller: _tableNameTextEditingController,
+            hintText: 'Table name',
+            autoFocus: true,
+            onChanged: (value) {
+              _shouldEnableCreateButton.value = value.isNotEmpty;
+            },
+          ),
+        ],
+      ),
+      actions: [
+        MyRoundedElevatedButton('Cancel', onTap: () => Navigator.pop(context)),
+        const SizedBox(width: 8.0),
+        ValueListenableBuilder(
+            valueListenable: _shouldEnableCreateButton,
+            builder: (_, value, __) {
+              VoidCallback? onTap;
+              if (value) {
+                onTap = () {};
+              }
+              return MyRoundedElevatedButton(
+                'Create',
+                isPrimary: true,
+                onTap: onTap,
+              );
+            }),
+      ],
     );
   }
 }
