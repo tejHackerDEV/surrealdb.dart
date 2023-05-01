@@ -19,9 +19,15 @@ class Strings {
   static const tablesNotFound = 'No tables found';
   static const recordsNotFound = 'No records found';
 
+  // CreateTableDialog
+  static const createTable = 'Create Table';
+  static const tableNameHint = 'Table Name';
+
   // Common
   static const where = 'WHERE';
   static const select = 'SELECT';
   static const records = 'Records';
   static const indexes = 'Indexes';
+  static const create = 'Create';
+  static const cancel = 'Cancel';
 }

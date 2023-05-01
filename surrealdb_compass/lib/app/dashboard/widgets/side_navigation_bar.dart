@@ -269,13 +269,13 @@ class _CreateNewTableDialogState extends State<_CreateNewTableDialog> {
   @override
   Widget build(BuildContext context) {
     return MyAlertDialog(
-      'Create Table',
+      Strings.createTable,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           MyTextFormField(
             controller: _tableNameTextEditingController,
-            hintText: 'Table name',
+            hintText: Strings.tableNameHint,
             autoFocus: true,
             onChanged: (value) {
               _shouldEnableCreateButton.value = value.isNotEmpty;
@@ -284,7 +284,8 @@ class _CreateNewTableDialogState extends State<_CreateNewTableDialog> {
         ],
       ),
       actions: [
-        MyRoundedElevatedButton('Cancel', onTap: () => Navigator.pop(context)),
+        MyRoundedElevatedButton(Strings.cancel,
+            onTap: () => Navigator.pop(context)),
         const SizedBox(width: 8.0),
         ValueListenableBuilder(
             valueListenable: _shouldEnableCreateButton,
@@ -294,7 +295,7 @@ class _CreateNewTableDialogState extends State<_CreateNewTableDialog> {
                 onTap = () {};
               }
               return MyRoundedElevatedButton(
-                'Create',
+                Strings.create,
                 isPrimary: true,
                 onTap: onTap,
               );
