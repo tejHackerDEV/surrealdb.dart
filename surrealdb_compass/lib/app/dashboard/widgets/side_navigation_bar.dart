@@ -12,15 +12,18 @@ import '../../widgets/my_list_view.dart';
 import '../../widgets/my_rounded_elevated_button.dart';
 import '../../widgets/my_text_form_field.dart';
 
-typedef TablesCallback = Future<Iterable<Table>> Function();
+typedef RefreshTables = Future<Iterable<Table>> Function();
+typedef CreateTable = Future<void> Function(String value);
 
 class SideNavigationBar extends StatefulWidget {
   final ValueChanged<Table> onTableSelected;
-  final TablesCallback onTablesRefresh;
+  final RefreshTables onRefreshTables;
+  final CreateTable onCreateTable;
   const SideNavigationBar({
     Key? key,
     required this.onTableSelected,
-    required this.onTablesRefresh,
+    required this.onRefreshTables,
+    required this.onCreateTable,
   }) : super(key: key);
 
   @override
@@ -57,7 +60,7 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
 
   Future<void> _loadTables() async {
     _isLoaded.value = false;
-    await widget.onTablesRefresh().then((value) {
+    await widget.onRefreshTables().then((value) {
       _tables = value;
       _tablesError = null; // reset error value in case of success result
     }).catchError((error) {
@@ -201,8 +204,13 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
                               MyIconButton(
                                 Icons.add_outlined,
                                 size: 20.0,
-                                onTap: () {
-                                  _showCreateNewTableDialog(context);
+                                onTap: () async {
+                                  final didTableCreated =
+                                      await _showCreateNewTableDialog(context);
+                                  if (!didTableCreated) {
+                                    return;
+                                  }
+                                  _loadTables();
                                 },
                               )
                             ],
@@ -239,17 +247,24 @@ class _SideNavigationBarState extends State<SideNavigationBar> {
     );
   }
 
-  void _showCreateNewTableDialog(BuildContext context) {
-    showDialog(
+  Future<bool> _showCreateNewTableDialog(BuildContext context) async {
+    final didTableCreated = await showDialog<bool>(
         context: context,
         builder: (_) {
-          return const _CreateNewTableDialog();
+          return _CreateNewTableDialog(
+            onCreateTable: widget.onCreateTable,
+          );
         });
+    return didTableCreated ?? false;
   }
 }
 
 class _CreateNewTableDialog extends StatefulWidget {
-  const _CreateNewTableDialog({Key? key}) : super(key: key);
+  final CreateTable onCreateTable;
+  const _CreateNewTableDialog({
+    Key? key,
+    required this.onCreateTable,
+  }) : super(key: key);
 
   @override
   State<_CreateNewTableDialog> createState() => _CreateNewTableDialogState();
@@ -284,15 +299,21 @@ class _CreateNewTableDialogState extends State<_CreateNewTableDialog> {
         ],
       ),
       actions: [
-        MyRoundedElevatedButton(Strings.cancel,
-            onTap: () => Navigator.pop(context)),
+        MyRoundedElevatedButton(
+          Strings.cancel,
+          onTap: () => Navigator.pop(context),
+        ),
         const SizedBox(width: 8.0),
         ValueListenableBuilder(
             valueListenable: _shouldEnableCreateButton,
             builder: (_, value, __) {
               VoidCallback? onTap;
               if (value) {
-                onTap = () {};
+                onTap = () {
+                  widget
+                      .onCreateTable(_tableNameTextEditingController.text)
+                      .then((_) => Navigator.pop(context, true));
+                };
               }
               return MyRoundedElevatedButton(
                 Strings.create,

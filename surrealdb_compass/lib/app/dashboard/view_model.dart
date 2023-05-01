@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart' hide Table;
 import 'package:surrealdb_compass/utils/extensions/string.dart';
 
 import '../../domain/entities/info/helpers/table.dart';
+import '../../use_cases/create_table.dart';
 import '../../use_cases/delete_table_record_by_thing.dart';
 import '../../use_cases/get_db_info.dart';
 import '../../use_cases/get_records_count.dart';
@@ -13,11 +14,13 @@ class DashboardPageViewModel extends ViewModel {
   final GetTableRecordsUseCase _getTableRecordsUseCase;
   final GetRecordsCountUseCase _getRecordsCountUseCase;
   final DeleteTableRecordByThingUseCase _deleteTableRecordsUseCase;
+  final CreateTableUseCase _createTableUseCase;
   DashboardPageViewModel(
     this._getDBInfoUseCase,
     this._getTableRecordsUseCase,
     this._getRecordsCountUseCase,
     this._deleteTableRecordsUseCase,
+    this._createTableUseCase,
   );
 
   final scrollController = ScrollController();
@@ -80,6 +83,10 @@ class DashboardPageViewModel extends ViewModel {
     return _deleteTableRecordsUseCase.call(thing).then((_) {
       decreaseTableRecordCount(thing.tableName, 1);
     });
+  }
+
+  Future<void> createTable(String tableName) {
+    return _createTableUseCase.call(tableName);
   }
 
   void loadTableRecordsCount(String tableName) {

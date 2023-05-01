@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 
 import '../../data/repository.dart';
+import '../../use_cases/create_table.dart';
 import '../../use_cases/delete_table_record_by_thing.dart';
 import '../../use_cases/get_db_info.dart';
 import '../../use_cases/get_records_count.dart';
@@ -18,6 +19,7 @@ class DashboardPageViewModelBuilder extends ViewModelBuilder {
       GetTableRecordsUseCase(repository),
       GetRecordsCountUseCase(repository),
       DeleteTableRecordByThingUseCase(repository),
+      CreateTableUseCase(repository),
     );
   }
 }
