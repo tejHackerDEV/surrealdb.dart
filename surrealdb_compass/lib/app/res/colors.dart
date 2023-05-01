@@ -35,6 +35,7 @@ class Colors {
   static const textContent = Color(0xFF989cad);
   static const textFieldContent = green;
   static const textFieldBg = Color(0xFF1D232D);
+  static const textDisabled = Color(0xFF8d9096);
 
   static const icon = textContent;
 
@@ -43,4 +44,12 @@ class Colors {
 
   static const recordValue = Color(0xFFAE81ff);
   static const recordStringValue = green;
+
+  static const unfocusedButtonBackground = Color(0xFF272E3C);
+  static const unfocusedButtonBoxShadow = Color(0x4DFFFFFF);
+  static const focusedButtonOuterBorder = Color(0xFF641074);
+  static const focusedButtonBoxShadow1 = Color(0x80FF009E);
+  static const focusedButtonBoxShadow2 = Color(0x0D000000);
+  static const focusedButtonBoxShadow3 = Color(0x4D9600FF);
+  static const focusedButtonBoxShadow4 = Color(0x0Affffff);
 }

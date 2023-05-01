@@ -6,12 +6,14 @@ import '../res/colors.dart';
 class MyRoundedElevatedButton extends StatefulWidget {
   final String text;
   final EdgeInsets? padding;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final bool isPrimary;
   const MyRoundedElevatedButton(
     this.text, {
     Key? key,
     this.padding,
     required this.onTap,
+    this.isPrimary = false,
   }) : super(key: key);
 
   @override
@@ -20,14 +22,25 @@ class MyRoundedElevatedButton extends StatefulWidget {
 }
 
 class _MyRoundedElevatedButtonState extends State<MyRoundedElevatedButton> {
-  bool isInHoverState = false;
+  bool _isInHoverState = false;
+
+  bool get _shouldShowGradientBackground {
+    if (_isInHoverState) {
+      return true;
+    }
+    if (widget.onTap == null) {
+      return false;
+    }
+    return widget.isPrimary;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isDisabled = widget.onTap == null;
     final borderRadius = BorderRadius.circular(24.0);
     return TweenAnimationBuilder(
       duration: const Duration(milliseconds: 200),
-      tween: Tween<double>(begin: 1.0, end: !isInHoverState ? 1.0 : 1.1),
+      tween: Tween<double>(begin: 1.0, end: !_isInHoverState ? 1.0 : 1.1),
       builder: (context, value, child) {
         return Transform.scale(
           scale: value,
@@ -36,22 +49,61 @@ class _MyRoundedElevatedButtonState extends State<MyRoundedElevatedButton> {
       },
       child: DecoratedBox(
         decoration: BoxDecoration(
+          border: Border.all(
+            color: !_isInHoverState
+                ? isDisabled
+                    ? Colors.transparent
+                    : Colors.border.withOpacity(0.5)
+                : Colors.focusedButtonOuterBorder,
+            width: !_isInHoverState ? 0.0 : 3.0,
+          ),
           borderRadius: borderRadius,
-          gradient: Constants.kPrimaryGradient,
-          boxShadow: !isInHoverState
+          color: _shouldShowGradientBackground
               ? null
+              : Colors.unfocusedButtonBackground,
+          gradient: !_shouldShowGradientBackground
+              ? null
+              : Constants.kPrimaryGradient,
+          boxShadow: !_isInHoverState
+              ? isDisabled
+                  ? null
+                  : widget.isPrimary
+                      ? null
+                      : [
+                          const BoxShadow(
+                            color: Colors.unfocusedButtonBoxShadow,
+                            offset: Offset(0.0, -1.0),
+                            blurRadius: 1.0,
+                          ),
+                        ]
               : [
                   const BoxShadow(
-                    color: Colors.primaryGradientOne,
-                    blurRadius: 6.0,
-                  )
+                    color: Colors.focusedButtonBoxShadow1,
+                    offset: Offset(0.0, 0.0),
+                    blurRadius: 20.0,
+                  ),
+                  const BoxShadow(
+                    color: Colors.focusedButtonBoxShadow2,
+                    offset: Offset(0.0, 4.0),
+                    blurRadius: 12.0,
+                  ),
+                  const BoxShadow(
+                    color: Colors.focusedButtonBoxShadow3,
+                    offset: Offset(0.0, 0.0),
+                    blurRadius: 4.0,
+                  ),
+                  const BoxShadow(
+                    color: Colors.focusedButtonBoxShadow4,
+                    offset: Offset(0.0, -1.0),
+                    blurRadius: 1.0,
+                  ),
                 ],
         ),
         child: ElevatedButton(
           onPressed: widget.onTap,
           onHover: (value) {
             setState(() {
-              isInHoverState = value;
+              _isInHoverState = value;
             });
           },
           style: ElevatedButton.styleFrom(
@@ -68,8 +120,12 @@ class _MyRoundedElevatedButtonState extends State<MyRoundedElevatedButton> {
           ),
           child: Text(
             widget.text,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: !_shouldShowGradientBackground
+                  ? isDisabled
+                      ? Colors.textDisabled
+                      : Colors.textContent
+                  : Colors.white,
               fontSize: 16.0,
               fontWeight: FontWeight.w600,
             ),
