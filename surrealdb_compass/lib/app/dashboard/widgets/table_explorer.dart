@@ -315,6 +315,7 @@ class _TableExplorerState extends State<TableExplorer> {
             const SizedBox(width: 16.0),
             MyRoundedElevatedButton(
               Strings.select,
+              isPrimary: true,
               padding: const EdgeInsets.symmetric(
                 horizontal: 28.0,
                 vertical: 16.0,
