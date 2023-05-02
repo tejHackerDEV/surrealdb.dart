@@ -11,12 +11,14 @@ class MyRoundedElevatedButton extends StatefulWidget {
   final EdgeInsets? padding;
   final FutureOr<void> Function()? onTap;
   final bool isPrimary;
+  final double fontSize;
   const MyRoundedElevatedButton(
     this.text, {
     Key? key,
     this.padding,
     required this.onTap,
     this.isPrimary = false,
+    this.fontSize = 16.0,
   }) : super(key: key);
 
   @override
@@ -148,7 +150,7 @@ class _MyRoundedElevatedButtonState extends State<MyRoundedElevatedButton> {
                               ? Colors.textDisabled
                               : Colors.textContent
                           : Colors.white,
-                      fontSize: 16.0,
+                      fontSize: widget.fontSize,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

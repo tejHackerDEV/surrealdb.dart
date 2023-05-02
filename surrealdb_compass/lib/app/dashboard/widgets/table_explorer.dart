@@ -57,6 +57,9 @@ class _TableExplorerState extends State<TableExplorer> {
   /// Holds the current index of the record on which the mouse is hovered
   int? _hoveredIndex;
 
+  /// Holds the edit state of record present at a particular index
+  final _recordsInEditMode = <int, bool>{};
+
   final _whereClauseTextEditingController = TextEditingController();
 
   /// Holds the number of records that exists in the table for the
@@ -152,78 +155,153 @@ class _TableExplorerState extends State<TableExplorer> {
         _hoveredIndex = index;
       });
 
+  void _setRecordEditMode(int index, bool value) => setState(() {
+        _recordsInEditMode[index] = value;
+      });
+
+  Widget _buildRecordOptions(int index, Map<String, dynamic> recordJson) {
+    Widget buildOption(IconData iconData, {required VoidCallback onTap}) =>
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8.0,
+            vertical: 4.0,
+          ),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.white),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: MyIconButton(
+            iconData,
+            size: 14.0,
+            onTap: onTap,
+          ),
+        );
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        buildOption(Icons.edit_outlined,
+            onTap: () => _setRecordEditMode(
+                index, !(_recordsInEditMode[index] ?? false))),
+        const SizedBox(width: 12.0),
+        buildOption(
+          Icons.delete,
+          onTap: () => widget
+              .onDeleteRecordByThing(
+            recordJson['id'],
+          )
+              .then((_) {
+            _records!.removeAt(index);
+            _decreaseRecordCount(1);
+            _animatedListKey.currentState!.removeItem(
+              index,
+              (context, animation) => _buildRecord(
+                index,
+                animation,
+                recordJson,
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecordEditStatButtons(
+    String text, {
+    required VoidCallback? onTap,
+    bool isPrimary = false,
+  }) =>
+      MyRoundedElevatedButton(
+        text,
+        padding: const EdgeInsets.symmetric(
+          vertical: 4.0,
+          horizontal: 16.0,
+        ),
+        fontSize: 12.0,
+        isPrimary: isPrimary,
+        onTap: onTap,
+      );
+
   Widget _buildRecord(
     int index,
     Animation<double> animation,
     Map<String, dynamic> recordJson,
-  ) =>
-      VerticalScalingAnimation(
-        value: animation,
-        child: Column(
-          children: [
-            MouseRegion(
-              onEnter: (_) => _setHoveredIndex(index),
-              onExit: (_) => _setHoveredIndex(null),
-              child: Container(
-                padding: const EdgeInsets.all(24.0),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.border,
-                  ),
-                  borderRadius: BorderRadius.circular(8.0),
+  ) {
+    bool isInEditMode = _recordsInEditMode[index] ?? false;
+    const borderRadiusValue = 8.0;
+    return VerticalScalingAnimatedWidget(
+      value: animation,
+      child: Column(
+        children: [
+          MouseRegion(
+            onEnter: (_) => _setHoveredIndex(index),
+            onExit: (_) => _setHoveredIndex(null),
+            child: Container(
+              padding: const EdgeInsets.all(24.0),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.border,
                 ),
-                child: Stack(
-                  children: [
-                    Record(
-                      json: recordJson,
-                    ),
-                    if (_hoveredIndex == index)
-                      _buildRecordOptions(index, recordJson),
-                  ],
+                borderRadius: BorderRadius.vertical(
+                  top: const Radius.circular(borderRadiusValue),
+                  bottom: isInEditMode
+                      ? Radius.zero
+                      : const Radius.circular(borderRadiusValue),
                 ),
               ),
-            ),
-            // https://github.com/flutter/flutter/issues/48226
-            if (index != _records!.length - 1) const SizedBox(height: 8.0),
-          ],
-        ),
-      );
-
-  Widget _buildRecordOptions(int index, Map<String, dynamic> recordJson) => Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 8.0,
-              vertical: 4.0,
-            ),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.white),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: MyIconButton(
-              Icons.delete,
-              size: 14.0,
-              onTap: () => widget
-                  .onDeleteRecordByThing(
-                recordJson['id'],
-              )
-                  .then((_) {
-                _records!.removeAt(index);
-                _decreaseRecordCount(1);
-                _animatedListKey.currentState!.removeItem(
-                  index,
-                  (context, animation) => _buildRecord(
-                    index,
-                    animation,
+              child: Stack(
+                children: [
+                  Record(
                     recordJson,
                   ),
-                );
-              }),
+                  if (_hoveredIndex == index)
+                    _buildRecordOptions(index, recordJson),
+                ],
+              ),
             ),
           ),
+          TweenAnimationBuilder(
+            duration: const Duration(milliseconds: 250),
+            tween: Tween<double>(begin: 0.0, end: !isInEditMode ? 0.0 : 1.0),
+            builder: (context, value, child) {
+              return VerticalScalingWidget(
+                value: value,
+                child: child!,
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                vertical: 8.0,
+                horizontal: 12.0,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.border.withOpacity(0.5),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(borderRadiusValue),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  _buildRecordEditStatButtons(Strings.cancel, onTap: () {
+                    _setRecordEditMode(index, false);
+                  }),
+                  const SizedBox(width: 16.0),
+                  _buildRecordEditStatButtons(
+                    Strings.update,
+                    isPrimary: true,
+                    onTap: null,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // https://github.com/flutter/flutter/issues/48226
+          if (index != _records!.length - 1) const SizedBox(height: 8.0),
         ],
-      );
+      ),
+    );
+  }
 
   Widget _buildRecordsCount(
     int currentPageRecordStartsAt,

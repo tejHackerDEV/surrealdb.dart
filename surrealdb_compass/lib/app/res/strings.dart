@@ -30,4 +30,5 @@ class Strings {
   static const indexes = 'Indexes';
   static const create = 'Create';
   static const cancel = 'Cancel';
+  static const update = 'Update';
 }
