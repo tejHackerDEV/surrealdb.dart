@@ -23,6 +23,11 @@ class Strings {
   static const createTable = 'Create Table';
   static const tableNameHint = 'Table Name';
 
+  // Record
+  static const editRecord = 'Edit record';
+  static const copyRecord = 'Copy record';
+  static const deleteRecord = 'Delete record';
+
   // Common
   static const where = 'WHERE';
   static const select = 'SELECT';

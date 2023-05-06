@@ -179,7 +179,11 @@ class _TableExplorerState extends State<TableExplorer> {
   }
 
   Widget _buildRecordOptions(int index, Map<String, dynamic> recordJson) {
-    Widget buildOption(IconData iconData, {required VoidCallback onTap}) =>
+    Widget buildOption(
+      IconData iconData, {
+      required String description,
+      required VoidCallback onTap,
+    }) =>
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: 8.0,
@@ -192,6 +196,7 @@ class _TableExplorerState extends State<TableExplorer> {
           child: MyIconButton(
             iconData,
             size: 14.0,
+            description: description,
             onTap: onTap,
           ),
         );
@@ -200,6 +205,7 @@ class _TableExplorerState extends State<TableExplorer> {
       children: [
         buildOption(
           Icons.edit_outlined,
+          description: Strings.editRecord,
           onTap: () => _setRecordEditMode(
             index,
             true,
@@ -208,6 +214,7 @@ class _TableExplorerState extends State<TableExplorer> {
         const SizedBox(width: 12.0),
         buildOption(
           Icons.content_copy_outlined,
+          description: Strings.copyRecord,
           onTap: () async => await Clipboard.setData(
             ClipboardData(
               text: recordJson.prettier().toString(),
@@ -217,6 +224,7 @@ class _TableExplorerState extends State<TableExplorer> {
         const SizedBox(width: 12.0),
         buildOption(
           Icons.delete,
+          description: Strings.deleteRecord,
           onTap: () => widget
               .onDeleteRecordByThing(
             recordJson['id'],
