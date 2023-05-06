@@ -164,8 +164,9 @@ class _TableExplorerState extends State<TableExplorer> {
 
   void _setHoveredIndex(int? index) => _hoveredIndex.value = index;
 
-  void _setRecordEditMode(int index, bool value) =>
-      _recordsState[index]!.inEditMode.value = value;
+  void _setRecordEditMode(int index, bool value) => _recordsState[index]!
+    ..inEditMode.value = value
+    ..isJsonUpdated.value = false;
 
   void _onRecordUpdated(int index) {
     final recordState = _recordsState[index]!;
