@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart' hide Colors;
 
 import '../../constants.dart';
@@ -171,7 +171,8 @@ class _TableExplorerState extends State<TableExplorer> {
     final recordState = _recordsState[index]!;
     final previousJson = _records![index];
     final updatedJson = recordState.key.currentState!.json;
-    recordState.isJsonUpdated.value = !mapEquals(previousJson, updatedJson);
+    recordState.isJsonUpdated.value =
+        !const DeepCollectionEquality().equals(previousJson, updatedJson);
   }
 
   Widget _buildRecordOptions(int index, Map<String, dynamic> recordJson) {

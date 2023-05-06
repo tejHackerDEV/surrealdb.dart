@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Colors;
 
@@ -38,7 +40,8 @@ class RecordState extends State<Record> {
   }
 
   void reset() {
-    _json = Map.of(widget.json);
+    // create a deep copy of the original json
+    _json = jsonDecode(jsonEncode(widget.json));
     if (!mounted) {
       return;
     }
