@@ -120,6 +120,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                               _viewModel.getRecordsCount,
                                           onDeleteRecordByThing:
                                               _viewModel.deleteRecordByThing,
+                                          onRecordContentUpdate: _viewModel
+                                              .updateRecordContentByThing,
                                         ),
                                       ),
                                     ],

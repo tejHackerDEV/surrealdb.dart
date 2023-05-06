@@ -23,18 +23,24 @@ typedef GetRecordsCount = Future<int> Function(
   int? start,
 });
 typedef DeleteRecordByThing = Future Function(String thing);
+typedef RecordContentUpdate = Future Function(
+  String thing,
+  Map<String, dynamic> content,
+);
 
 class TableExplorer extends StatefulWidget {
   final String tableName;
   final GetRecords getRecords;
   final GetRecordsCount getRecordsCount;
   final DeleteRecordByThing onDeleteRecordByThing;
+  final RecordContentUpdate onRecordContentUpdate;
   const TableExplorer({
     Key? key,
     required this.tableName,
     required this.getRecords,
     required this.getRecordsCount,
     required this.onDeleteRecordByThing,
+    required this.onRecordContentUpdate,
   }) : super(key: key);
 
   @override
@@ -192,7 +198,7 @@ class _TableExplorerState extends State<TableExplorer> {
           Icons.edit_outlined,
           onTap: () => _setRecordEditMode(
             index,
-            !_recordsState[index]!.inEditMode.value,
+            true,
           ),
         ),
         const SizedBox(width: 12.0),
@@ -221,7 +227,7 @@ class _TableExplorerState extends State<TableExplorer> {
 
   Widget _buildRecordEditStatButtons(
     String text, {
-    required VoidCallback? onTap,
+    required ButtonCallBack? onTap,
     bool isPrimary = false,
   }) =>
       MyRoundedElevatedButton(
@@ -316,9 +322,18 @@ class _TableExplorerState extends State<TableExplorer> {
                   child: ValueListenableBuilder(
                     valueListenable: recordState.isJsonUpdated,
                     builder: (_, isJsonUpdated, child) {
-                      VoidCallback? onUpdate;
+                      ButtonCallBack? onUpdate;
                       if (isJsonUpdated) {
-                        onUpdate = () {};
+                        onUpdate = () {
+                          final updatedJson =
+                              recordState.key.currentState!.json;
+                          return widget
+                              .onRecordContentUpdate(
+                                updatedJson['id'],
+                                updatedJson,
+                              )
+                              .then((_) => _setRecordEditMode(index, false));
+                        };
                       }
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.end,

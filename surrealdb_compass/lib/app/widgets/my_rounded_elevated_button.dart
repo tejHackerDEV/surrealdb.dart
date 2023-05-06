@@ -6,10 +6,12 @@ import '../constants.dart';
 import '../res/colors.dart';
 import 'my_circular_progress_indicator.dart';
 
+typedef ButtonCallBack = FutureOr Function();
+
 class MyRoundedElevatedButton extends StatefulWidget {
   final String text;
   final EdgeInsets? padding;
-  final FutureOr<void> Function()? onTap;
+  final ButtonCallBack? onTap;
   final bool isPrimary;
   final double fontSize;
   const MyRoundedElevatedButton(

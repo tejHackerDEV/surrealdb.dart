@@ -7,6 +7,7 @@ import '../../use_cases/delete_table_record_by_thing.dart';
 import '../../use_cases/get_db_info.dart';
 import '../../use_cases/get_records_count.dart';
 import '../../use_cases/get_table_records.dart';
+import '../../use_cases/update_record_content.dart';
 import '../view_model.dart';
 
 class DashboardPageViewModel extends ViewModel {
@@ -15,12 +16,14 @@ class DashboardPageViewModel extends ViewModel {
   final GetRecordsCountUseCase _getRecordsCountUseCase;
   final DeleteTableRecordByThingUseCase _deleteTableRecordsUseCase;
   final CreateTableUseCase _createTableUseCase;
+  final UpdateRecordContentUseCase _updateRecordContentUseCase;
   DashboardPageViewModel(
     this._getDBInfoUseCase,
     this._getTableRecordsUseCase,
     this._getRecordsCountUseCase,
     this._deleteTableRecordsUseCase,
     this._createTableUseCase,
+    this._updateRecordContentUseCase,
   );
 
   final scrollController = ScrollController();
@@ -87,6 +90,13 @@ class DashboardPageViewModel extends ViewModel {
 
   Future<void> createTable(String tableName) {
     return _createTableUseCase.call(tableName);
+  }
+
+  Future<Map<String, dynamic>> updateRecordContentByThing(
+    String thing,
+    Map<String, dynamic> content,
+  ) {
+    return _updateRecordContentUseCase.call(thing, content);
   }
 
   void loadTableRecordsCount(String tableName) {
