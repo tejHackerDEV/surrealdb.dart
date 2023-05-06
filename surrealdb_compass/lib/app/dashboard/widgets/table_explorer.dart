@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart' hide Colors;
+import 'package:flutter/services.dart';
+import 'package:surrealdb_compass/utils/extensions/map.dart';
 
 import '../../constants.dart';
 import '../../res/colors.dart';
@@ -201,6 +203,15 @@ class _TableExplorerState extends State<TableExplorer> {
           onTap: () => _setRecordEditMode(
             index,
             true,
+          ),
+        ),
+        const SizedBox(width: 12.0),
+        buildOption(
+          Icons.content_copy_outlined,
+          onTap: () async => await Clipboard.setData(
+            ClipboardData(
+              text: recordJson.prettier().toString(),
+            ),
           ),
         ),
         const SizedBox(width: 12.0),
