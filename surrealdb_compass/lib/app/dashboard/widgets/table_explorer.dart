@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Colors;
 
 import '../../constants.dart';
@@ -55,10 +56,10 @@ class _TableExplorerState extends State<TableExplorer> {
   bool _isLoaded = false;
 
   /// Holds the current index of the record on which the mouse is hovered
-  int? _hoveredIndex;
+  final _hoveredIndex = ValueNotifier<int?>(null);
 
-  /// Holds the edit state of record present at a particular index
-  final _recordsInEditMode = <int, bool>{};
+  /// Holds the state of record present at a particular index
+  final _recordsState = <int, _RecordState>{};
 
   final _whereClauseTextEditingController = TextEditingController();
 
@@ -129,6 +130,10 @@ class _TableExplorerState extends State<TableExplorer> {
           _currentPageRecordEndsAt.value = _records!.length;
         }
       }
+      // reset the states when ever we load records
+      for (int i = 0; i < _records!.length; i++) {
+        _recordsState[i] = _RecordState(inEditMode: false);
+      }
       _recordsError = null; // reset error value in case of success result
     }).catchError((error) {
       _recordsError = error;
@@ -151,13 +156,17 @@ class _TableExplorerState extends State<TableExplorer> {
         .catchError((_) => _recordsCount.value = -1);
   }
 
-  void _setHoveredIndex(int? index) => setState(() {
-        _hoveredIndex = index;
-      });
+  void _setHoveredIndex(int? index) => _hoveredIndex.value = index;
 
-  void _setRecordEditMode(int index, bool value) => setState(() {
-        _recordsInEditMode[index] = value;
-      });
+  void _setRecordEditMode(int index, bool value) =>
+      _recordsState[index]!.inEditMode.value = value;
+
+  void _onRecordUpdated(int index) {
+    final recordState = _recordsState[index]!;
+    final previousJson = _records![index];
+    final updatedJson = recordState.key.currentState!.json;
+    recordState.isJsonUpdated.value = !mapEquals(previousJson, updatedJson);
+  }
 
   Widget _buildRecordOptions(int index, Map<String, dynamic> recordJson) {
     Widget buildOption(IconData iconData, {required VoidCallback onTap}) =>
@@ -179,9 +188,13 @@ class _TableExplorerState extends State<TableExplorer> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        buildOption(Icons.edit_outlined,
-            onTap: () => _setRecordEditMode(
-                index, !(_recordsInEditMode[index] ?? false))),
+        buildOption(
+          Icons.edit_outlined,
+          onTap: () => _setRecordEditMode(
+            index,
+            !_recordsState[index]!.inEditMode.value,
+          ),
+        ),
         const SizedBox(width: 12.0),
         buildOption(
           Icons.delete,
@@ -227,78 +240,111 @@ class _TableExplorerState extends State<TableExplorer> {
     Animation<double> animation,
     Map<String, dynamic> recordJson,
   ) {
-    bool isInEditMode = _recordsInEditMode[index] ?? false;
+    final recordState = _recordsState[index]!;
     const borderRadiusValue = 8.0;
     return VerticalScalingAnimatedWidget(
       value: animation,
-      child: Column(
-        children: [
-          MouseRegion(
-            onEnter: (_) => _setHoveredIndex(index),
-            onExit: (_) => _setHoveredIndex(null),
-            child: Container(
-              padding: const EdgeInsets.all(24.0),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.border,
-                ),
-                borderRadius: BorderRadius.vertical(
-                  top: const Radius.circular(borderRadiusValue),
-                  bottom: isInEditMode
-                      ? Radius.zero
-                      : const Radius.circular(borderRadiusValue),
-                ),
-              ),
-              child: Stack(
-                children: [
-                  Record(
-                    recordJson,
+      child: ValueListenableBuilder(
+        valueListenable: recordState.inEditMode,
+        builder: (_, inEditMode, __) {
+          return Column(
+            children: [
+              MouseRegion(
+                onEnter: (_) => _setHoveredIndex(index),
+                onExit: (_) => _setHoveredIndex(null),
+                child: Container(
+                  padding: const EdgeInsets.all(24.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.border,
+                    ),
+                    borderRadius: BorderRadius.vertical(
+                      top: const Radius.circular(borderRadiusValue),
+                      bottom: inEditMode
+                          ? Radius.zero
+                          : const Radius.circular(borderRadiusValue),
+                    ),
                   ),
-                  if (_hoveredIndex == index)
-                    _buildRecordOptions(index, recordJson),
-                ],
-              ),
-            ),
-          ),
-          TweenAnimationBuilder(
-            duration: const Duration(milliseconds: 250),
-            tween: Tween<double>(begin: 0.0, end: !isInEditMode ? 0.0 : 1.0),
-            builder: (context, value, child) {
-              return VerticalScalingWidget(
-                value: value,
-                child: child!,
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                vertical: 8.0,
-                horizontal: 12.0,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.border.withOpacity(0.5),
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(borderRadiusValue),
+                  child: Stack(
+                    children: [
+                      Record(
+                        recordJson,
+                        key: recordState.key,
+                        inEditMode: inEditMode,
+                        onUpdated: () => _onRecordUpdated(index),
+                      ),
+                      ValueListenableBuilder(
+                        valueListenable: _hoveredIndex,
+                        builder: (_, hoveredIndex, child) {
+                          if (hoveredIndex != index) {
+                            return const SizedBox.shrink();
+                          }
+                          if (inEditMode) {
+                            return const SizedBox.shrink();
+                          }
+                          return child!;
+                        },
+                        child: _buildRecordOptions(index, recordJson),
+                      )
+                    ],
+                  ),
                 ),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  _buildRecordEditStatButtons(Strings.cancel, onTap: () {
-                    _setRecordEditMode(index, false);
-                  }),
-                  const SizedBox(width: 16.0),
-                  _buildRecordEditStatButtons(
-                    Strings.update,
-                    isPrimary: true,
-                    onTap: null,
+              TweenAnimationBuilder(
+                duration: const Duration(milliseconds: 250),
+                tween: Tween<double>(
+                  begin: 0.0,
+                  end: !inEditMode ? 0.0 : 1.0,
+                ),
+                builder: (context, value, child) {
+                  return VerticalScalingWidget(
+                    value: value,
+                    child: child!,
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8.0,
+                    horizontal: 12.0,
                   ),
-                ],
+                  decoration: BoxDecoration(
+                    color: Colors.border.withOpacity(0.5),
+                    borderRadius: const BorderRadius.vertical(
+                      bottom: Radius.circular(borderRadiusValue),
+                    ),
+                  ),
+                  child: ValueListenableBuilder(
+                    valueListenable: recordState.isJsonUpdated,
+                    builder: (_, isJsonUpdated, child) {
+                      VoidCallback? onUpdate;
+                      if (isJsonUpdated) {
+                        onUpdate = () {};
+                      }
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          _buildRecordEditStatButtons(Strings.cancel,
+                              onTap: () {
+                            recordState.key.currentState!.reset();
+                            _setRecordEditMode(index, false);
+                          }),
+                          const SizedBox(width: 16.0),
+                          _buildRecordEditStatButtons(
+                            Strings.update,
+                            isPrimary: true,
+                            onTap: onUpdate,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
               ),
-            ),
-          ),
-          // https://github.com/flutter/flutter/issues/48226
-          if (index != _records!.length - 1) const SizedBox(height: 8.0),
-        ],
+              // https://github.com/flutter/flutter/issues/48226
+              if (index != _records!.length - 1) const SizedBox(height: 8.0),
+            ],
+          );
+        },
       ),
     );
   }
@@ -446,4 +492,25 @@ class _TableExplorerState extends State<TableExplorer> {
       ],
     );
   }
+}
+
+/// And helper class which hold the state properties of an Record
+class _RecordState {
+  /// An key that will used for the record widget
+  final GlobalKey<RecordState> key;
+
+  /// An notifier which will get notified when ever the record json
+  /// toggle between normal & editModel
+  final ValueNotifier<bool> inEditMode;
+
+  /// An notifier which will get notified when ever the record json
+  /// gets updated in editMode
+  final ValueNotifier<bool> isJsonUpdated;
+
+  _RecordState({
+    required bool inEditMode,
+    bool isJsonUpdated = false,
+  })  : key = GlobalKey(),
+        inEditMode = ValueNotifier(inEditMode),
+        isJsonUpdated = ValueNotifier(isJsonUpdated);
 }

@@ -46,7 +46,7 @@ class JsonExpansionTile extends StatefulWidget {
     this.children = const <Widget>[],
     this.initiallyExpanded = false,
     this.maintainState = false,
-    required this.tilePadding,
+    this.tilePadding = const EdgeInsets.symmetric(vertical: 4.0),
     this.expandedCrossAxisAlignment,
     this.expandedAlignment,
     required this.childrenPadding,
