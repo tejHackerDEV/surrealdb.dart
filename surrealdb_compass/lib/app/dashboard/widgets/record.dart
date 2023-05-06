@@ -29,7 +29,7 @@ class RecordState extends State<Record> {
   /// inserting previous value of a `key` back into the
   /// `json`, if the `key` that is being clashing is
   /// removed by the user.
-  final _clashingKeys = <List<String>, dynamic>{};
+  final _clashingKeys = <List<Object>, dynamic>{};
 
   @override
   void initState() {
@@ -53,11 +53,50 @@ class RecordState extends State<Record> {
 
   bool _isString(dynamic value) => value is String;
 
+  /// Exacts the `value` from [value] based on the [key] passed.
+  ///
+  /// <br>
+  /// [value] must be either [Iterable] or [Map].
+  dynamic _extractValueByKey(String key, dynamic value) {
+    assert(
+      value is Iterable || value is Map,
+      'Value must be either Iterable or Map',
+    );
+    if (value is Iterable) {
+      value = value.elementAt(int.parse(key));
+    } else {
+      value = value[key];
+    }
+    return value;
+  }
+
+  /// Exacts the `value` from [value] based on the [keys] passed.
+  ///
+  /// [value] must be either [Iterable] or [Map].
+  dynamic _extractValueRecursively(
+    Iterable<Object> keys,
+    dynamic value,
+  ) {
+    assert(
+      value is Iterable || value is Map,
+      'Value must be either Iterable or Map',
+    );
+    for (int i = 0; i < keys.length; ++i) {
+      final dynamic key = keys.elementAt(i);
+      if (key is Iterable<Object>) {
+        value = _extractValueRecursively(key, value);
+        continue;
+      }
+      value = _extractValueByKey(key, value);
+    }
+    return value;
+  }
+
   Widget _buildKey(
-    List<String> keys, {
+    List<Object> keys, {
     bool forList = false,
   }) {
-    final key = keys.last;
+    final key = keys.last as String;
     return TextFormField(
       // this key is required inorder to reset state
       // while switching between normal & edit mode
@@ -70,14 +109,19 @@ class RecordState extends State<Record> {
         dynamic value = _json;
         for (int i = 0; i < keys.length; ++i) {
           dynamic key = keys.elementAt(i);
+          // If key is an iterable then we must extract the value recursively
+          // using them
+          if (key is Iterable<Object>) {
+            value = _extractValueRecursively(
+              key,
+              value,
+            );
+            continue;
+          }
           if (i != keys.length - 1) {
             // This is not the lastKey, so simply keep looping
             // by taking the value
-            if (value is List) {
-              value = value[int.parse(key)];
-            } else {
-              value = value[key];
-            }
+            value = _extractValueByKey(key, value);
           } else {
             // This is the lastKey so check for the cases
             // we want before updating the json
@@ -129,7 +173,6 @@ class RecordState extends State<Record> {
 
   Widget _buildValue(
     dynamic value, {
-    required List<String> keys,
     required double leftPadding,
   }) {
     Widget child;
@@ -172,7 +215,7 @@ class RecordState extends State<Record> {
 
   Widget _buildJson(
     Map<String, dynamic> json, {
-    required List<String> keys,
+    required List<Object> keys,
     required double leftPadding,
     bool forList = false,
   }) {
@@ -189,7 +232,10 @@ class RecordState extends State<Record> {
       children: List.generate(json.length, (index) {
         final entry = json.entries.elementAt(index);
         final updatedKeys = [
-          ...keys,
+          // Only add the keys if it is not empty
+          // don't remove this, because we are adding
+          // empty list as a key in the `build` method.
+          if (keys.isNotEmpty) keys,
           entry.key,
         ];
         return JsonExpansionTile(
@@ -216,7 +262,6 @@ class RecordState extends State<Record> {
               ),
               _buildValue(
                 entry.value,
-                keys: updatedKeys,
                 leftPadding: leftPadding,
               ),
             ],
@@ -242,7 +287,7 @@ class RecordState extends State<Record> {
 
   Widget _buildList(
     List<dynamic> list, {
-    required List<String> keys,
+    required List<Object> keys,
     required double leftPadding,
   }) {
     final listJson = <String, dynamic>{};
