@@ -178,11 +178,11 @@ class _TableExplorerState extends State<TableExplorer> {
         !const DeepCollectionEquality().equals(previousJson, updatedJson);
   }
 
-  Widget _buildRecordOptions(int index, Map<String, dynamic> recordJson) {
+  Widget _buildRecordOptions(int index) {
     Widget buildOption(
       IconData iconData, {
       required String description,
-      required VoidCallback onTap,
+      required ButtonCallBack onTap,
     }) =>
         Container(
           padding: const EdgeInsets.symmetric(
@@ -200,6 +200,7 @@ class _TableExplorerState extends State<TableExplorer> {
             onTap: onTap,
           ),
         );
+    final recordKey = _recordsState[index]!.key;
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -217,7 +218,7 @@ class _TableExplorerState extends State<TableExplorer> {
           description: Strings.copyRecord,
           onTap: () async => await Clipboard.setData(
             ClipboardData(
-              text: recordJson.prettier().toString(),
+              text: recordKey.currentState!.json.prettier().toString(),
             ),
           ),
         ),
@@ -225,22 +226,25 @@ class _TableExplorerState extends State<TableExplorer> {
         buildOption(
           Icons.delete,
           description: Strings.deleteRecord,
-          onTap: () => widget
-              .onDeleteRecordByThing(
-            recordJson['id'],
-          )
-              .then((_) {
-            _records!.removeAt(index);
-            _decreaseRecordCount(1);
-            _animatedListKey.currentState!.removeItem(
-              index,
-              (context, animation) => _buildRecord(
+          onTap: () {
+            final recordJson = recordKey.currentState!.json;
+            return widget
+                .onDeleteRecordByThing(
+              recordJson['id'],
+            )
+                .then((_) {
+              _records!.removeAt(index);
+              _decreaseRecordCount(1);
+              _animatedListKey.currentState!.removeItem(
                 index,
-                animation,
-                recordJson,
-              ),
-            );
-          }),
+                (context, animation) => _buildRecord(
+                  index,
+                  animation,
+                  recordJson,
+                ),
+              );
+            });
+          },
         ),
       ],
     );
@@ -311,7 +315,7 @@ class _TableExplorerState extends State<TableExplorer> {
                           }
                           return child!;
                         },
-                        child: _buildRecordOptions(index, recordJson),
+                        child: _buildRecordOptions(index),
                       )
                     ],
                   ),
@@ -350,10 +354,13 @@ class _TableExplorerState extends State<TableExplorer> {
                               recordState.key.currentState!.json;
                           return widget
                               .onRecordContentUpdate(
-                                updatedJson['id'],
-                                updatedJson,
-                              )
-                              .then((_) => _setRecordEditMode(index, false));
+                            updatedJson['id'],
+                            updatedJson,
+                          )
+                              .then((_) {
+                            _records![index] = recordJson = updatedJson;
+                            _setRecordEditMode(index, false);
+                          });
                         };
                       }
                       return Row(
