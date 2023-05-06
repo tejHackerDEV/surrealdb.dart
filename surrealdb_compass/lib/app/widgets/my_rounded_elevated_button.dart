@@ -33,13 +33,19 @@ class _MyRoundedElevatedButtonState extends State<MyRoundedElevatedButton> {
   bool _isLoading = false;
 
   bool get _shouldShowGradientBackground {
-    if (_isInHoverState) {
-      return true;
-    }
     if (widget.onTap == null) {
       return false;
     }
-    return widget.isPrimary;
+    return _isInHoverState || widget.isPrimary;
+  }
+
+  @override
+  void didUpdateWidget(covariant MyRoundedElevatedButton oldWidget) {
+    // reset hoverState if the onTap is set to null
+    if (widget.onTap == null) {
+      _isInHoverState = false;
+    }
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
