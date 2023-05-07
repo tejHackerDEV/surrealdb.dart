@@ -24,6 +24,7 @@ class Strings {
   static const tableNameHint = 'Table Name';
 
   // Record
+  static const addRecord = 'Add record';
   static const editRecord = 'Edit record';
   static const copyRecord = 'Copy record';
   static const deleteRecord = 'Delete record';

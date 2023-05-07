@@ -9,7 +9,9 @@ import '../../res/strings.dart';
 import '../../widgets/animations/scaling_animation.dart';
 import '../../widgets/my_icon_button.dart';
 import '../../widgets/my_rounded_elevated_button.dart';
+import '../../widgets/my_side_sheet.dart';
 import '../../widgets/my_text_form_field.dart';
+import 'add_record_sheet.dart';
 import 'record.dart';
 
 typedef GetRecords = Future<Iterable<Map<String, dynamic>>> Function(
@@ -494,20 +496,43 @@ class _TableExplorerState extends State<TableExplorer> {
           ],
         ),
         const SizedBox(height: 16.0),
-        ValueListenableBuilder(
-          valueListenable: _recordsCount,
-          builder: (_, recordsCount, __) => ValueListenableBuilder(
-            valueListenable: _currentPageRecordStartsAt,
-            builder: (_, currentPageRecordStartsAt, __) =>
-                ValueListenableBuilder(
-              valueListenable: _currentPageRecordEndsAt,
-              builder: (_, currentPageRecordEndAt, __) => _buildRecordsCount(
-                currentPageRecordStartsAt,
-                currentPageRecordEndAt,
-                recordsCount,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            MyRoundedElevatedButton(
+              Strings.addRecord,
+              padding: const EdgeInsets.symmetric(
+                vertical: 4.0,
+                horizontal: 16.0,
+              ),
+              fontSize: 12.0,
+              onTap: () async {
+                await showSideSheet(
+                  context: context,
+                  side: SheetSide.right,
+                  barrierDismissible: true,
+                  title: Strings.addRecord,
+                  pageBuilder: (_, __, ___) => const AddRecordSheet(),
+                );
+              },
+            ),
+            ValueListenableBuilder(
+              valueListenable: _recordsCount,
+              builder: (_, recordsCount, __) => ValueListenableBuilder(
+                valueListenable: _currentPageRecordStartsAt,
+                builder: (_, currentPageRecordStartsAt, __) =>
+                    ValueListenableBuilder(
+                  valueListenable: _currentPageRecordEndsAt,
+                  builder: (_, currentPageRecordEndAt, __) =>
+                      _buildRecordsCount(
+                    currentPageRecordStartsAt,
+                    currentPageRecordEndAt,
+                    recordsCount,
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
         const SizedBox(height: 16.0),
         Expanded(
