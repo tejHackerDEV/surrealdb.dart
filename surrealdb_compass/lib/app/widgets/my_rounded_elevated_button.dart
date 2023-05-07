@@ -128,9 +128,10 @@ class _MyRoundedElevatedButtonState extends State<MyRoundedElevatedButton> {
                             });
                             await widget.onTap!();
                           } finally {
-                            setState(() {
-                              _isLoading = false;
-                            });
+                            _isLoading = false;
+                            if (mounted) {
+                              setState(() {});
+                            }
                           }
                         },
                   onHover: (value) {
